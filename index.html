@@ -100,19 +100,17 @@
                 </div>
             </div>
 
-            <!-- THANH TÌM KIẾM & LỌC ACC (MỚI THÊM) -->
+            <!-- THANH TÌM KIẾM & LỌC ACC -->
             <div class="bg-slate-900 border border-slate-800 p-4 md:p-6 rounded-3xl shadow-xl space-y-4">
                 <div class="flex items-center justify-between">
                     <h3 class="text-sm font-bold text-cyan-400 flex items-center"><i class="fa-solid fa-magnifying-glass mr-2"></i> Tìm Kiếm & Lọc Tài Khoản</h3>
                     <button onclick="resetSearchFilter()" class="text-xs text-slate-400 hover:text-white transition"><i class="fa-solid fa-rotate-right mr-1"></i> Đặt lại</button>
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-                    <!-- Ô tìm kiếm theo tên hoặc ID -->
                     <div>
                         <label class="block text-[11px] font-semibold text-slate-400 mb-1">Tìm theo tên hoặc ID</label>
                         <input type="text" id="search-keyword" placeholder="Nhập tên acc, ID..." oninput="filterAccounts()" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-cyan-500">
                     </div>
-                    <!-- Lọc theo Rank -->
                     <div>
                         <label class="block text-[11px] font-semibold text-slate-400 mb-1">Chọn Rank</label>
                         <select id="search-rank" onchange="filterAccounts()" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-cyan-500">
@@ -129,7 +127,6 @@
                             <option value="Thách Đấu">Thách Đấu</option>
                         </select>
                     </div>
-                    <!-- Lọc theo Khoảng Giá -->
                     <div>
                         <label class="block text-[11px] font-semibold text-slate-400 mb-1">Khoảng Giá</label>
                         <select id="search-price-range" onchange="filterAccounts()" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-cyan-500">
@@ -140,7 +137,6 @@
                             <option value="1000000-999999999">Trên 1,000,000 đ</option>
                         </select>
                     </div>
-                    <!-- Sắp xếp giá -->
                     <div>
                         <label class="block text-[11px] font-semibold text-slate-400 mb-1">Sắp xếp theo giá</label>
                         <select id="search-sort-price" onchange="filterAccounts()" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-cyan-500">
@@ -372,47 +368,119 @@
             </div>
         </section>
 
-        <!-- 4. TRANG NẠP TIỀN -->
+        <!-- 4. TRANG NẠP TIỀN & RÚT TIỀN (GỘP CHUNG HOẶC CHUYỂN TAB) -->
         <section id="page-deposit" class="hidden max-w-2xl mx-auto space-y-6">
             <div class="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-3xl shadow-2xl relative">
                 <button onclick="showPage('home')" class="absolute top-6 right-6 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-xl font-bold text-cyan-400 flex items-center"><i class="fa-solid fa-qrcode mr-2"></i> NẠP TIỀN VÀO TÀI KHOẢN</h2>
-                    <button id="btn-config-vietqr" onclick="openVietQRConfigModal()" class="hidden bg-slate-800 hover:bg-slate-700 text-cyan-400 px-3 py-1.5 rounded-xl text-xs font-bold transition">
-                        <i class="fa-solid fa-pen-to-square mr-1"></i> Đổi Mã VietQR Của Tôi
-                    </button>
+                
+                <!-- Tab chuyển đổi Nạp Tiền / Rút Tiền -->
+                <div class="flex border-b border-slate-800 mb-6">
+                    <button onclick="switchWalletTab('deposit')" id="wallet-tab-deposit" class="w-1/2 py-3 text-center font-bold text-cyan-400 border-b-2 border-cyan-400 text-sm">Nạp Tiền Vào Ví</button>
+                    <button onclick="switchWalletTab('withdraw')" id="wallet-tab-withdraw" class="w-1/2 py-3 text-center font-bold text-slate-400 text-sm">Rút Tiền Về Ngân Hàng</button>
                 </div>
 
-                <div id="deposit-input-box" class="space-y-4">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-400 mb-1">Số tiền muốn nạp (VNĐ)</label>
-                        <input type="text" id="deposit-amount-formatted" placeholder="VD: 100,000" oninput="formatCurrencyInput(this)" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white outline-none">
+                <!-- PHẦN NẠP TIỀN -->
+                <div id="wallet-section-deposit" class="space-y-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <h2 class="text-lg font-bold text-cyan-400 flex items-center"><i class="fa-solid fa-qrcode mr-2"></i> NẠP TIỀN VÀO TÀI KHOẢN</h2>
+                        <button id="btn-config-vietqr" onclick="openVietQRConfigModal()" class="hidden bg-slate-800 hover:bg-slate-700 text-cyan-400 px-3 py-1.5 rounded-xl text-xs font-bold transition">
+                            <i class="fa-solid fa-pen-to-square mr-1"></i> Đổi Mã VietQR Của Tôi
+                        </button>
                     </div>
-                    <button onclick="generateVietQR()" class="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-3 rounded-xl text-sm transition">Tiếp Tục</button>
+
+                    <div id="deposit-input-box" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-400 mb-1">Số tiền muốn nạp (VNĐ)</label>
+                            <input type="text" id="deposit-amount-formatted" placeholder="VD: 100,000" oninput="formatCurrencyInput(this)" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white outline-none">
+                        </div>
+                        <button onclick="generateVietQR()" class="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-3 rounded-xl text-sm transition">Tiếp Tục</button>
+                    </div>
+
+                    <div id="deposit-qr-box" class="hidden space-y-6 text-center pt-2 border-t border-slate-800 mt-6">
+                        <div id="qr-container-view">
+                            <div class="bg-white p-4 rounded-2xl inline-block shadow-xl border mb-4">
+                                <img id="vietqr-img" src="" alt="Mã VietQR" class="w-64 h-64 object-contain mx-auto">
+                            </div>
+                            <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 text-left space-y-2 text-xs md:text-sm">
+                                <div class="flex justify-between border-b border-slate-800 pb-2"><span class="text-slate-400">Ngân hàng:</span><span id="qr-bank-name" class="font-bold text-cyan-400">Techcombank</span></div>
+                                <div class="flex justify-between border-b border-slate-800 pb-2"><span class="text-slate-400">Số tài khoản:</span><span id="qr-acc-number" class="font-bold text-white">99999999983868</span></div>
+                                <div class="flex justify-between border-b border-slate-800 pb-2"><span class="text-slate-400">Chủ tài khoản:</span><span id="qr-acc-holder" class="font-bold text-white">PHAM VAN HOA</span></div>
+                                <div class="flex justify-between border-b border-slate-800 pb-2"><span class="text-slate-400">Số tiền:</span><span id="qr-display-amount" class="font-bold text-emerald-400">0 đ</span></div>
+                                <div class="flex justify-between"><span class="text-slate-400">Nội dung:</span><span id="qr-display-content" class="font-bold text-amber-400"></span></div>
+                            </div>
+                        </div>
+                        <div id="deposit-loading" class="hidden py-4 text-center space-y-3">
+                            <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-cyan-500 border-t-transparent"></div>
+                            <p class="text-xs text-amber-400 font-semibold">Đang xử lý cộng tiền...</p>
+                        </div>
+                        <div id="deposit-actions" class="grid grid-cols-2 gap-4">
+                            <button onclick="cancelDeposit()" class="bg-red-600 hover:bg-red-500 text-white font-bold py-3 rounded-xl text-xs md:text-sm transition shadow-lg">Hủy Bỏ</button>
+                            <button onclick="confirmPaid()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl text-xs md:text-sm transition">Xác Nhận Nạp Tiền</button>
+                        </div>
+                    </div>
                 </div>
 
-                <div id="deposit-qr-box" class="hidden space-y-6 text-center pt-2 border-t border-slate-800 mt-6">
-                    <div id="qr-container-view">
-                        <div class="bg-white p-4 rounded-2xl inline-block shadow-xl border mb-4">
-                            <img id="vietqr-img" src="" alt="Mã VietQR" class="w-64 h-64 object-contain mx-auto">
+                <!-- PHẦN RÚT TIỀN VỀ NGÂN HÀNG (MỚI THÊM CHO ADMIN, USER, CTV) -->
+                <div id="wallet-section-withdraw" class="space-y-4 hidden">
+                    <h2 class="text-lg font-bold text-amber-400 flex items-center mb-2"><i class="fa-solid fa-money-bill-transfer mr-2"></i> RÚT TIỀN TỪ VÍ VỀ TÀI KHOẢN NGÂN HÀNG</h2>
+                    <p class="text-xs text-slate-400">Hỗ trợ tất cả ngân hàng Việt Nam (Cập nhật mới nhất). Số dư ví của bạn sẽ được trừ chính xác ngay khi xác nhận.</p>
+                    
+                    <form onsubmit="handleWithdrawMoney(event)" class="space-y-4 pt-2">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-400 mb-1">Chọn Ngân Hàng Nhận Tiền</label>
+                            <select id="withdraw-bank-select" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-amber-500">
+                                <option value="">-- Chọn Ngân Hàng Việt Nam --</option>
+                                <!-- Danh sách đầy đủ ngân hàng VN mới nhất -->
+                                <option value="ICB">Ngân hàng TMCP Công Thương Việt Nam (VietinBank)</option>
+                                <option value="VCB">Ngân hàng TMCP Ngoại Thương Việt Nam (Vietcombank)</option>
+                                <option value="BIDV">Ngân hàng TMCP Đầu tư và Phát triển Việt Nam (BIDV)</option>
+                                <option value="VBA">Ngân hàng Nông nghiệp và Phát triển Nông thôn Việt Nam (Agribank)</option>
+                                <option value="TCB">Ngân hàng TMCP Kỹ Thương Việt Nam (Techcombank)</option>
+                                <option value="MB">Ngân hàng TMCP Quân đội (MB Bank)</option>
+                                <option value="ACB">Ngân hàng TMCP Á Châu (ACB)</option>
+                                <option value="VPB">Ngân hàng TMCP Việt Nam Thịnh Vượng (VPBank)</option>
+                                <option value="TPB">Ngân hàng TMCP Tiên Phong (TPBank)</option>
+                                <option value="STB">Ngân hàng TMCP Sài Gòn Thương Tín (Sacombank)</option>
+                                <option value="HDB">Ngân hàng TMCP Phát triển Thành phố Hồ Chí Minh (HDBank)</option>
+                                <option value="VIB">Ngân hàng TMCP Quốc tế Việt Nam (VIB)</option>
+                                <option value="SHB">Ngân hàng TMCP Sài Gòn - Hà Nội (SHB)</option>
+                                <option value="OCB">Ngân hàng TMCP Phương Đông (OCB)</option>
+                                <option value="MSB">Ngân hàng TMCP Hàng Hải Việt Nam (MSB)</option>
+                                <option value="EIB">Ngân hàng TMCP Xuất Nhập Khẩu Việt Nam (Eximbank)</option>
+                                <option value="LPB">Ngân hàng TMCP Lộc Phát Việt Nam (LPBank)</option>
+                                <option value="NAB">Ngân hàng TMCP Nam Á (Nam A Bank)</option>
+                                <option value="BAB">Ngân hàng TMCP Bắc Á (Bac A Bank)</option>
+                                <option value="PGB">Ngân hàng TMCP Thịnh vượng và Phát triển (PGBank)</option>
+                                <option value="VCCB">Ngân hàng TMCP Bản Việt (VietCapitalBank)</option>
+                                <option value="SGB">Ngân hàng TMCP Sài Gòn Công Thương (SaigonBank)</option>
+                                <option value="BVB">Ngân hàng TMCP Bảo Việt (BaoVietBank)</option>
+                                <option value="OCB">Ngân hàng TMCP Phương Đông (OCB)</option>
+                                <option value="OceanBank">Ngân hàng Thương mại TNHH MTV Đại Dương (OceanBank)</option>
+                                <option value="GPBank">Ngân hàng Thương mại TNHH MTV Dầu Khí Global (GPBank)</option>
+                                <option value="CBBank">Ngân hàng Thương mại TNHH MTV Xây dựng Việt Nam (CBBank)</option>
+                                <option value="VRB">Ngân hàng Liên doanh Việt - Nga (VRB)</option>
+                                <option value="IVB">Ngân hàng TNHH Indovina (IVB)</option>
+                                <option value="WVN">Ngân hàng Woori Việt Nam (Woori)</option>
+                                <option value="SHBVN">Ngân hàng Shinhan Việt Nam (Shinhan Bank)</option>
+                                <option value="UOB">Ngân hàng United Overseas Bank (UOB)</option>
+                                <option value="SCB">Ngân hàng TMCP Sài Gòn (SCB)</option>
+                            </select>
                         </div>
-                        <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 text-left space-y-2 text-xs md:text-sm">
-                            <div class="flex justify-between border-b border-slate-800 pb-2"><span class="text-slate-400">Ngân hàng:</span><span id="qr-bank-name" class="font-bold text-cyan-400">Techcombank</span></div>
-                            <div class="flex justify-between border-b border-slate-800 pb-2"><span class="text-slate-400">Số tài khoản:</span><span id="qr-acc-number" class="font-bold text-white">99999999983868</span></div>
-                            <div class="flex justify-between border-b border-slate-800 pb-2"><span class="text-slate-400">Chủ tài khoản:</span><span id="qr-acc-holder" class="font-bold text-white">PHAM VAN HOA</span></div>
-                            <div class="flex justify-between border-b border-slate-800 pb-2"><span class="text-slate-400">Số tiền:</span><span id="qr-display-amount" class="font-bold text-emerald-400">0 đ</span></div>
-                            <div class="flex justify-between"><span class="text-slate-400">Nội dung:</span><span id="qr-display-content" class="font-bold text-amber-400"></span></div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-400 mb-1">Số Tài Khoản Ngân Hàng</label>
+                            <input type="text" id="withdraw-acc-number" placeholder="Nhập chính xác số tài khoản nhận tiền" required oninput="validateInputRealtime(this)" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-amber-500">
                         </div>
-                    </div>
-                    <div id="deposit-loading" class="hidden py-4 text-center space-y-3">
-                        <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-cyan-500 border-t-transparent"></div>
-                        <p class="text-xs text-amber-400 font-semibold">Đang xử lý cộng tiền...</p>
-                    </div>
-                    <div id="deposit-actions" class="grid grid-cols-2 gap-4">
-                        <button onclick="cancelDeposit()" class="bg-red-600 hover:bg-red-500 text-white font-bold py-3 rounded-xl text-xs md:text-sm transition shadow-lg">Hủy Bỏ</button>
-                        <button onclick="confirmPaid()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl text-xs md:text-sm transition">Xác Nhận Nạp Tiền</button>
-                    </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-400 mb-1">Số Tiền Rút (VNĐ)</label>
+                            <input type="text" id="withdraw-amount-formatted" placeholder="VD: 200,000" required oninput="formatCurrencyInput(this)" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-amber-500">
+                        </div>
+                        <div class="bg-amber-500/10 border border-amber-500/30 p-3 rounded-xl text-xs text-amber-300">
+                            <p>Số dư ví hiện tại: <b id="withdraw-current-balance" class="text-white">0 đ</b></p>
+                        </div>
+                        <button type="submit" class="w-full bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-bold py-3 rounded-xl text-sm transition shadow-lg">Xác Nhận Rút Tiền Về Tài Khoản</button>
+                    </form>
                 </div>
+
             </div>
         </section>
 
@@ -451,7 +519,7 @@
                 </div>
             </div>
 
-            <!-- DASHBOARD THỐNG KÊ (LOẠI TRỪ SỐ DƯ ADMIN) -->
+            <!-- DASHBOARD THỐNG KÊ -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div class="bg-slate-900 border border-emerald-500/40 p-5 rounded-2xl shadow-lg">
                     <span class="text-emerald-400 text-xs font-bold uppercase flex items-center"><i class="fa-solid fa-money-bill-wave mr-1"></i> Doanh Thu Bán Acc</span>
@@ -501,7 +569,7 @@
                 </div>
             </div>
 
-            <!-- QUẢN LÝ THÀNH VIÊN (CTV KHÔNG CÓ QUYỀN QUẢN LÝ ADMIN) -->
+            <!-- QUẢN LÝ THÀNH VIÊN -->
             <div class="bg-slate-900 border border-slate-800 p-6 rounded-3xl space-y-4">
                 <h3 class="font-bold text-lg text-cyan-400 flex items-center"><i class="fa-solid fa-users-gear mr-2"></i> Quản Lý Tài Khoản Thành Viên Hệ Thống</h3>
                 <div class="overflow-x-auto">
@@ -563,10 +631,36 @@
             </div>
         </section>
 
-        <!-- 6. TRANG LỊCH SỬ MUA ACC -->
+        <!-- 6. TRANG LỊCH SỬ TỦ ĐỒ, MUA ACC & LỊCH SỬ NẠP RÚT -->
         <section id="page-history" class="hidden space-y-6">
-            <h2 class="text-xl font-bold text-cyan-400 flex items-center"><i class="fa-solid fa-box-open mr-2"></i> Tủ Đồ & Acc Đã Mua</h2>
-            <div id="history-list" class="space-y-4"></div>
+            <div class="flex border-b border-slate-800">
+                <button onclick="switchHistoryTab('orders')" id="hist-tab-orders" class="w-1/2 py-3 text-center font-bold text-cyan-400 border-b-2 border-cyan-400 text-sm">Tủ Đồ & Acc Đã Mua</button>
+                <button onclick="switchHistoryTab('transactions')" id="hist-tab-transactions" class="w-1/2 py-3 text-center font-bold text-slate-400 text-sm">Lịch Sử Nạp & Rút Tiền</button>
+            </div>
+
+            <div id="history-content-orders" class="space-y-4">
+                <div id="history-list" class="space-y-4"></div>
+            </div>
+
+            <div id="history-content-transactions" class="space-y-4 hidden">
+                <div class="bg-slate-900 border border-slate-800 p-6 rounded-3xl space-y-4">
+                    <h3 class="font-bold text-base text-amber-400 flex items-center"><i class="fa-solid fa-clock-rotate-left mr-2"></i> Lịch Sử Giao Dịch Nạp / Rút Của Bạn</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs text-slate-300">
+                            <thead class="bg-slate-950 text-slate-400 uppercase">
+                                <tr>
+                                    <th class="p-3">Loại Giao Dịch</th>
+                                    <th class="p-3">Số Tiền</th>
+                                    <th class="p-3">Chi Tiết / Ngân Hàng</th>
+                                    <th class="p-3">Trạng Thái</th>
+                                    <th class="p-3">Thời Gian</th>
+                                </tr>
+                            </thead>
+                            <tbody id="user-transaction-history-table" class="divide-y divide-slate-800"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </section>
 
     </main>
@@ -637,6 +731,7 @@
             }
             if (!localStorage.getItem('orders')) localStorage.setItem('orders', JSON.stringify([]));
             if (!localStorage.getItem('deposits')) localStorage.setItem('deposits', JSON.stringify([]));
+            if (!localStorage.getItem('withdraws')) localStorage.setItem('withdraws', JSON.stringify([]));
             if (!localStorage.getItem('ctv_requests')) localStorage.setItem('ctv_requests', JSON.stringify([]));
             if (!localStorage.getItem('server_config')) {
                 localStorage.setItem('server_config', JSON.stringify({ isOnline: true, reason: '' }));
@@ -652,6 +747,8 @@
         const saveOrders = (o) => localStorage.setItem('orders', JSON.stringify(o));
         const getDeposits = () => JSON.parse(localStorage.getItem('deposits'));
         const saveDeposits = (d) => localStorage.setItem('deposits', JSON.stringify(d));
+        const getWithdraws = () => JSON.parse(localStorage.getItem('withdraws') || '[]');
+        const saveWithdraws = (w) => localStorage.setItem('withdraws', JSON.stringify(w));
         const getCtvRequests = () => JSON.parse(localStorage.getItem('ctv_requests'));
         const saveCtvRequests = (r) => localStorage.setItem('ctv_requests', JSON.stringify(r));
         const getServerConfig = () => JSON.parse(localStorage.getItem('server_config'));
@@ -661,7 +758,6 @@
         let currentDepositPending = null;
         let currentCtvPending = null;
 
-        // Kiểm tra số dư ví theo thời gian thực (realtime sync khi admin thay đổi)
         function syncRealtimeUserBalance() {
             if (!currentUser) return;
             const users = getUsers();
@@ -677,14 +773,10 @@
         }
         setInterval(syncRealtimeUserBalance, 2000);
 
-        // Kiểm tra độ mạnh yếu mật khẩu
         function checkPasswordStrength(password, elementId) {
             const el = document.getElementById(elementId);
             if (!el) return;
-            if (!password) {
-                el.innerText = '';
-                return;
-            }
+            if (!password) { el.innerText = ''; return; }
             let score = 0;
             if (password.length >= 6) score++;
             if (password.length >= 10) score++;
@@ -704,12 +796,11 @@
             }
         }
 
-        // Kiểm tra thời gian thực hết hạn của CTV
         function checkRealtimeCtvExpiration() {
             if (!currentUser) return;
             if (currentUser.role.startsWith('ctv') && currentUser.role !== 'vinhvien') {
                 if (currentUser.expireTime && new Date() > new Date(currentUser.expireTime)) {
-                    alert('Tài khoản CTV của bạn đã hết hạn sử dụng theo thời gian thực! Hệ thống sẽ tự động đăng xuất.');
+                    alert('Tài khoản CTV của bạn đã hết hạn sử dụng! Hệ thống sẽ tự động đăng xuất.');
                     handleLogout();
                 }
             }
@@ -746,8 +837,8 @@
                 infoDiv.innerHTML = `<div class="font-bold text-white text-sm">Xin chào, ${currentUser.phone}</div><div class="text-cyan-400 text-[11px]">${roleLabel}</div><div class="text-amber-400 font-bold">Số dư: ${currentUser.balance.toLocaleString('vi-VN')} đ</div>`;
                 linksDiv.innerHTML = `
                     <button onclick="toggleOffCanvasMenu(); showPage('home')" class="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-slate-300 hover:bg-slate-800"><i class="fa-solid fa-house mr-2 text-cyan-400"></i> Trang Chủ</button>
-                    <button onclick="toggleOffCanvasMenu(); showPage('deposit')" class="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-slate-300 hover:bg-slate-800"><i class="fa-solid fa-wallet mr-2 text-amber-400"></i> Nạp Tiền Ví</button>
-                    <button onclick="toggleOffCanvasMenu(); showPage('history')" class="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-slate-300 hover:bg-slate-800"><i class="fa-solid fa-box mr-2 text-emerald-400"></i> Tủ Đồ</button>
+                    <button onclick="toggleOffCanvasMenu(); showPage('deposit')" class="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-slate-300 hover:bg-slate-800"><i class="fa-solid fa-wallet mr-2 text-amber-400"></i> Nạp / Rút Tiền Ví</button>
+                    <button onclick="toggleOffCanvasMenu(); showPage('history')" class="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-slate-300 hover:bg-slate-800"><i class="fa-solid fa-box mr-2 text-emerald-400"></i> Tủ Đồ & Lịch Sử</button>
                     <button onclick="toggleOffCanvasMenu(); showPage('register-ctv')" class="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-amber-400 hover:bg-slate-800"><i class="fa-solid fa-crown mr-2"></i> Đăng Ký CTV</button>
                     ${(currentUser.role === 'admin' || currentUser.role === 'vinhvien' || currentUser.role.startsWith('ctv')) ? `<button onclick="toggleOffCanvasMenu(); showPage('admin')" class="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-red-400 hover:bg-slate-800"><i class="fa-solid fa-gear mr-2"></i> Dashboard Quản Lý</button>` : ''}
                     <button onclick="toggleOffCanvasMenu(); handleLogout()" class="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-rose-400 hover:bg-slate-800"><i class="fa-solid fa-right-from-bracket mr-2"></i> Đăng Xuất</button>
@@ -839,6 +930,7 @@
             } else if (pageName === 'deposit') {
                 if (!currentUser) { alert('Vui lòng đăng nhập!'); showPage('auth'); return; }
                 document.getElementById('page-deposit').classList.remove('hidden');
+                document.getElementById('withdraw-current-balance').innerText = currentUser.balance.toLocaleString('vi-VN') + ' đ';
                 if (currentUser.role === 'admin' || currentUser.role.startsWith('ctv') || currentUser.role === 'vinhvien') {
                     document.getElementById('btn-config-vietqr').classList.remove('hidden');
                 } else {
@@ -853,6 +945,7 @@
             } else if (pageName === 'history') {
                 if (!currentUser) { alert('Vui lòng đăng nhập!'); showPage('auth'); return; }
                 renderHistory();
+                renderTransactionHistory();
                 document.getElementById('page-history').classList.remove('hidden');
             }
             updateNavbar();
@@ -878,7 +971,93 @@
             }
         }
 
-        // --- HÀM TÌM KIẾM, LỌC VÀ HIỂN THỊ DANH SÁCH ACC CHUẨN XÁC ---
+        function switchWalletTab(tab) {
+            if (tab === 'deposit') {
+                document.getElementById('wallet-section-deposit').classList.remove('hidden');
+                document.getElementById('wallet-section-withdraw').classList.add('hidden');
+                document.getElementById('wallet-tab-deposit').className = "w-1/2 py-3 text-center font-bold text-cyan-400 border-b-2 border-cyan-400 text-sm";
+                document.getElementById('wallet-tab-withdraw').className = "w-1/2 py-3 text-center font-bold text-slate-400 text-sm";
+            } else {
+                document.getElementById('wallet-section-deposit').classList.add('hidden');
+                document.getElementById('wallet-section-withdraw').classList.remove('hidden');
+                document.getElementById('wallet-tab-deposit').className = "w-1/2 py-3 text-center font-bold text-slate-400 text-sm";
+                document.getElementById('wallet-tab-withdraw').className = "w-1/2 py-3 text-center font-bold text-amber-400 border-b-2 border-amber-400 text-sm";
+                document.getElementById('withdraw-current-balance').innerText = currentUser.balance.toLocaleString('vi-VN') + ' đ';
+            }
+        }
+
+        function switchHistoryTab(tab) {
+            if (tab === 'orders') {
+                document.getElementById('history-content-orders').classList.remove('hidden');
+                document.getElementById('history-content-transactions').classList.add('hidden');
+                document.getElementById('hist-tab-orders').className = "w-1/2 py-3 text-center font-bold text-cyan-400 border-b-2 border-cyan-400 text-sm";
+                document.getElementById('hist-tab-transactions').className = "w-1/2 py-3 text-center font-bold text-slate-400 text-sm";
+            } else {
+                document.getElementById('history-content-orders').classList.add('hidden');
+                document.getElementById('history-content-transactions').classList.remove('hidden');
+                document.getElementById('hist-tab-orders').className = "w-1/2 py-3 text-center font-bold text-slate-400 text-sm";
+                document.getElementById('hist-tab-transactions').className = "w-1/2 py-3 text-center font-bold text-amber-400 border-b-2 border-amber-400 text-sm";
+                renderTransactionHistory();
+            }
+        }
+
+        // --- XỬ LÝ RÚT TIỀN (ÁP DỤNG CHO ADMIN, USER, CTV) ---
+        function handleWithdrawMoney(e) {
+            e.preventDefault();
+            const bankSelect = document.getElementById('withdraw-bank-select');
+            const bankName = bankSelect.options[bankSelect.selectedIndex].text;
+            const bankCode = bankSelect.value;
+            const accNumber = document.getElementById('withdraw-acc-number').value.trim();
+            const amount = getRawNumber(document.getElementById('withdraw-amount-formatted').value);
+
+            if (!bankCode || !accNumber || !amount) {
+                alert('Vui lòng điền đầy đủ thông tin rút tiền!');
+                return;
+            }
+
+            if (amount < 50000) {
+                alert('Số tiền rút tối thiểu là 50,000 đ!');
+                return;
+            }
+
+            if (currentUser.balance < amount) {
+                alert('Số dư ví của bạn không đủ để thực hiện lệnh rút tiền này!');
+                return;
+            }
+
+            if (confirm(`Xác nhận rút ${amount.toLocaleString('vi-VN')} đ về tài khoản ngân hàng ${bankName} (${accNumber})?\nSố tiền sẽ được trừ chính xác ngay lập tức vào ví của bạn.`)) {
+                // Trừ tiền trong ví chính xác
+                const users = getUsers();
+                const uIdx = users.findIndex(u => u.phone === currentUser.phone);
+                if (uIdx !== -1) {
+                    users[uIdx].balance -= amount;
+                    currentUser.balance = users[uIdx].balance;
+                    saveUsers(users);
+                    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                }
+
+                // Lưu vào lịch sử rút tiền
+                const withdraws = getWithdraws();
+                withdraws.push({
+                    id: Date.now(),
+                    phone: currentUser.phone,
+                    bankName,
+                    accNumber,
+                    amount,
+                    status: 'Thành công',
+                    date: new Date().toLocaleString('vi-VN')
+                });
+                saveWithdraws(withdraws);
+
+                showToast(`Rút tiền thành công! Đã chuyển về tài khoản ngân hàng của bạn.`);
+                document.getElementById('withdraw-acc-number').value = '';
+                document.getElementById('withdraw-amount-formatted').value = '';
+                document.getElementById('withdraw-current-balance').innerText = currentUser.balance.toLocaleString('vi-VN') + ' đ';
+                updateNavbar();
+            }
+        }
+
+        // --- HÀM TÌM KIẾM, LỌC VÀ HIỂN THỊ DANH SÁCH ACC ---
         function filterAccounts() {
             renderAccountGrid();
         }
@@ -895,13 +1074,11 @@
             const grid = document.getElementById('account-grid');
             let accounts = getAccounts().filter(a => a.status === 'available');
 
-            // Lấy giá trị từ các trường tìm kiếm & lọc
             const keyword = document.getElementById('search-keyword') ? document.getElementById('search-keyword').value.trim().toLowerCase() : '';
             const selectedRank = document.getElementById('search-rank') ? document.getElementById('search-rank').value : '';
             const priceRange = document.getElementById('search-price-range') ? document.getElementById('search-price-range').value : '';
             const sortPrice = document.getElementById('search-sort-price') ? document.getElementById('search-sort-price').value : '';
 
-            // 1. Lọc theo từ khóa (Tiêu đề hoặc ID)
             if (keyword) {
                 accounts = accounts.filter(acc => 
                     acc.title.toLowerCase().includes(keyword) || 
@@ -909,14 +1086,12 @@
                 );
             }
 
-            // 2. Lọc theo Rank chuẩn xác
             if (selectedRank) {
                 accounts = accounts.filter(acc => 
                     acc.rank && acc.rank.toLowerCase().includes(selectedRank.toLowerCase())
                 );
             }
 
-            // 3. Lọc theo khoảng giá
             if (priceRange) {
                 const [minPrice, maxPrice] = priceRange.split('-').map(Number);
                 accounts = accounts.filter(acc => {
@@ -925,7 +1100,6 @@
                 });
             }
 
-            // 4. Sắp xếp theo giá (Thấp -> Cao hoặc Cao -> Thấp)
             if (sortPrice) {
                 accounts.sort((a, b) => {
                     const priceA = a.discount > 0 ? a.price * (1 - a.discount / 100) : a.price;
@@ -998,18 +1172,12 @@
             const code = document.getElementById('ctv-reg-code').value.trim();
             const packageVal = document.getElementById('ctv-reg-package').value;
 
-            if (!username || !pass1 || !pass2 || !code) {
-                alert('Vui lòng điền đầy đủ thông tin!');
-                return;
-            }
+            if (!username || !pass1 || !pass2 || !code) { alert('Vui lòng điền đầy đủ thông tin!'); return; }
             if (pass1 !== pass2) { alert('Mật khẩu xác nhận không khớp!'); return; }
             if (code.length < 6) { alert('Mã bảo mật phải đủ 6 ký tự số!'); return; }
 
             const users = getUsers();
-            if (users.some(u => u.phone === username)) {
-                alert('Tên đăng nhập này đã tồn tại trong hệ thống!');
-                return;
-            }
+            if (users.some(u => u.phone === username)) { alert('Tên đăng nhập này đã tồn tại trong hệ thống!'); return; }
 
             let amount = 500000;
             let packageName = 'ctv03';
@@ -1157,7 +1325,6 @@
             }
         }
 
-        // ĐĂNG NHẬP USER
         function handleUserLogin(e) {
             e.preventDefault();
             const phone = document.getElementById('login-phone').value.trim();
@@ -1187,7 +1354,6 @@
             }
         }
 
-        // ĐĂNG NHẬP CTV RIÊNG BIỆT
         function handleCtvLogin(e) {
             e.preventDefault();
             const phone = document.getElementById('ctv-login-phone').value.trim();
@@ -1199,10 +1365,7 @@
             const ctv = users.find(u => u.phone === phone && u.password === pass);
 
             if (ctv) {
-                if (ctv.role === 'user' || ctv.role === 'admin') {
-                    alert('Tài khoản này không phải là CTV!');
-                    return;
-                }
+                if (ctv.role === 'user' || ctv.role === 'admin') { alert('Tài khoản này không phải là CTV!'); return; }
                 if (ctv.role !== 'vinhvien' && ctv.expireTime && new Date() > new Date(ctv.expireTime)) {
                     alert('Tài khoản CTV của bạn đã hết thời gian đăng ký và không thể đăng nhập!');
                     return;
@@ -1216,7 +1379,6 @@
             }
         }
 
-        // ĐĂNG NHẬP ADMIN
         function handleAdminLogin(e) {
             e.preventDefault();
             const phone = document.getElementById('admin-login-phone').value.trim();
@@ -1248,10 +1410,7 @@
             if (code.length < 6) { alert('Mã bảo mật phải có đúng 6 số!'); return; }
             
             const users = getUsers();
-            if (users.some(u => u.phone === phone)) {
-                alert('Tên đăng nhập hoặc SĐT đã tồn tại!');
-                return;
-            }
+            if (users.some(u => u.phone === phone)) { alert('Tên đăng nhập hoặc SĐT đã tồn tại!'); return; }
 
             users.push({ phone, password: pass1, security_code: code, balance: 0, role: 'user' });
             saveUsers(users);
@@ -1301,13 +1460,14 @@
         }
 
         function resetFullSystemData() {
-            if (confirm('CẢNH BÁO: Xóa sạch toàn bộ đơn hàng, kho acc, user và CTV, đưa trang về trạng thái ban đầu (Chỉ giữ Admin). Chắc chắn?')) {
+            if (confirm('CẢNH BÁO: Xóa sạch toàn bộ đơn hàng, kho acc, user, CTV và lịch sử, đưa trang về trạng thái ban đầu (Chỉ giữ Admin). Chắc chắn?')) {
                 const users = getUsers();
                 const adminAccount = users.filter(u => u.role === 'admin');
                 localStorage.setItem('users', JSON.stringify(adminAccount));
                 localStorage.setItem('accounts', JSON.stringify([]));
                 localStorage.setItem('orders', JSON.stringify([]));
                 localStorage.setItem('deposits', JSON.stringify([]));
+                localStorage.setItem('withdraws', JSON.stringify([]));
                 localStorage.setItem('ctv_requests', JSON.stringify([]));
                 localStorage.setItem('server_config', JSON.stringify({ isOnline: true, reason: '' }));
                 alert('Đã reset hệ thống thành công!');
@@ -1616,8 +1776,7 @@
         function renderHistory() {
             const list = document.getElementById('history-list');
             const orders = getOrders().filter(o => o.phone === currentUser.phone);
-            if (orders.length === 0) { list.innerHTML = `<div class="text-slate-500">Chưa có đơn hàng nào.</div>`; return; }
-            list.orders = orders;
+            if (orders.length === 0) { list.innerHTML = `<div class="text-slate-500">Chưa có đơn mua acc nào.</div>`; return; }
             list.innerHTML = orders.map(o => `
                 <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl flex justify-between items-center">
                     <div>
@@ -1626,6 +1785,47 @@
                     </div>
                     <span class="text-red-400 font-bold">${o.price.toLocaleString('vi-VN')} đ</span>
                 </div>
+            `).join('');
+        }
+
+        // --- HIỂN THỊ LỊCH SỬ NẠP & RÚT TIỀN CHO TẤT CẢ TÀI KHOẢN ---
+        function renderTransactionHistory() {
+            const tbody = document.getElementById('user-transaction-history-table');
+            if (!currentUser) return;
+
+            const myDeposits = getDeposits().filter(d => d.phone === currentUser.phone).map(d => ({
+                type: 'Nạp Tiền',
+                amount: d.amount,
+                detail: `Nội dung: ${d.content}`,
+                status: d.status === 'approved' ? 'Thành công (Đã duyệt)' : (d.status === 'rejected' ? 'Từ chối' : 'Chờ duyệt'),
+                date: d.date,
+                statusClass: d.status === 'approved' ? 'text-emerald-400' : (d.status === 'rejected' ? 'text-red-400' : 'text-amber-400')
+            }));
+
+            const myWithdraws = getWithdraws().filter(w => w.phone === currentUser.phone).map(w => ({
+                type: 'Rút Tiền',
+                amount: w.amount,
+                detail: `NH: ${w.bankName} - STK: ${w.accNumber}`,
+                status: w.status,
+                date: w.date,
+                statusClass: 'text-emerald-400'
+            }));
+
+            const allTransactions = [...myDeposits, [...myWithdraws]].flat().sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            if (allTransactions.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-500">Chưa có lịch sử nạp hoặc rút tiền nào.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = allTransactions.map(tx => `
+                <tr>
+                    <td class="p-3 font-bold ${tx.type === 'Nạp Tiền' ? 'text-cyan-400' : 'text-amber-400'}">${tx.type}</td>
+                    <td class="p-3 text-white font-bold">${tx.amount.toLocaleString('vi-VN')} đ</td>
+                    <td class="p-3 text-slate-300 text-xs">${tx.detail}</td>
+                    <td class="p-3 font-semibold ${tx.statusClass}">${tx.status}</td>
+                    <td class="p-3 text-slate-400 text-xs">${tx.date}</td>
+                </tr>
             `).join('');
         }
 
