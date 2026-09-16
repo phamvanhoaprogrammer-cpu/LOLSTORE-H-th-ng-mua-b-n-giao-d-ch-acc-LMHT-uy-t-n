@@ -643,10 +643,10 @@
                 </div>
             </div>
 
-            <!-- QUẢN LÝ TÀI KHOẢN THÀNH VIÊN -->
+            <!-- QUẢN LÝ TÀI KHOẢN THÀNH VIÊN (Bổ sung nút Sửa để chống văng bàn phím) -->
             <div class="glass-card p-6 md:p-8 rounded-[2rem] space-y-4 shadow-xl">
                 <h3 class="font-extrabold text-base text-cyan-400 flex items-center tracking-wide"><i class="fa-solid fa-users-gear mr-2 text-xl"></i> Quản Lý Tài Khoản Thành Viên Hệ Thống</h3>
-                <p class="text-xs text-slate-400">Admin có toàn quyền thay đổi trực tiếp Tên đăng nhập, Mật khẩu, Số dư hoặc xóa thủ công bất kỳ thành viên nào trong hệ thống.</p>
+                <p class="text-xs text-slate-400">Admin bấm nút <b>Sửa</b> để chỉnh sửa thông tin thành viên và bấm <b>Xác nhận</b> để lưu lại, giúp tránh lỗi văng bàn phím ảo trên mobile.</p>
                 <div class="overflow-x-auto custom-scrollbar max-h-[350px]">
                     <table class="w-full text-left text-xs text-slate-300">
                         <thead class="bg-[#030712] text-slate-400 uppercase tracking-wider sticky top-0 font-bold border-b border-slate-800">
@@ -825,7 +825,7 @@
         </div>
     </footer>
 
-    <!-- SCRIPT XỬ LÝ HỆ THỐNG ĐÃ FIX -->
+    <!-- SCRIPT XỬ LÝ HỆ THỐNG ĐÃ HOÀN THIỆN -->
     <script>
         const VIETNAM_BANKS = [
             { id: 'techcombank', name: 'Techcombank - Ngân hàng TMCP Kỹ Thương Việt Nam (TCB)' },
@@ -925,7 +925,7 @@
 
         const initDatabase = () => {
             if (!localStorage.getItem('admin_cccd')) localStorage.setItem('admin_cccd', '035202000000');
-            if (!localStorage.getItem('admin_bonus_percent')) localStorage.setItem('admin_bonus_percent', '0');
+            if (!localStorage.getItem('admin_bonus_percent')) localStorage.setItem('admin_bonus_percent', '10');
             if (!localStorage.getItem('verified_infos')) localStorage.setItem('verified_infos', JSON.stringify([]));
             if (!localStorage.getItem('vietqr_config')) {
                 localStorage.setItem('vietqr_config', JSON.stringify({
@@ -1004,7 +1004,6 @@
                 updateNavbar();
             }
             if (!document.getElementById('page-admin').classList.contains('hidden')) {
-                // Kiểm tra nếu admin đang thao tác nhập liệu ô cấu hình % thưởng thì không ghi đè giá trị đang gõ
                 const bonusInput = document.getElementById('admin-bonus-percent');
                 if (bonusInput && document.activeElement !== bonusInput) {
                     bonusInput.value = localStorage.getItem('admin_bonus_percent') || '0';
@@ -1413,7 +1412,6 @@
                     `;
                 }
 
-                // Bổ sung nút đăng xuất vào menu hệ thống
                 menuLinksHtml += `
                     <button onclick="logout()" class="w-full text-left p-3 rounded-xl bg-rose-950/40 border border-rose-500/30 text-rose-400 font-bold transition flex items-center"><i class="fa-solid fa-power-off mr-3"></i> Đăng Xuất Hệ Thống</button>
                 `;
@@ -1452,7 +1450,6 @@
             const target = document.getElementById(`page-${pageId}`);
             if (target) target.classList.remove('hidden');
 
-            // Tự động đóng menu hệ thống khi chuyển trang chức năng
             const menu = document.getElementById('offcanvas-menu');
             const backdrop = document.getElementById('offcanvas-backdrop');
             if (menu && menu.classList.contains('open')) {
@@ -1477,7 +1474,6 @@
             }
         }
 
-        // Render kho acc trang chủ
         function renderAccounts(customList = null) {
             const grid = document.getElementById('account-grid');
             if (!grid) return;
@@ -1485,34 +1481,37 @@
             const avail = accounts.filter(a => a.status === 'available');
 
             if (avail.length === 0) {
-                grid.innerHTML = `<div class="col-span-full py-16 text-center text-slate-500 glass-card rounded-[2rem]"><i class="fa-solid fa-box-open text-4xl mb-2 text-slate-600"></i><p class="text-sm font-bold">Không có tài khoản nào trong kho.</p></div>`;
+                grid.innerHTML = `<div class="col-span-full py-16 text-center text-slate-500 glass-card rounded-[2rem]"><i class="fa-solid fa-box-open text-4xl mb-2 text-slate-600"></i><p class="text-sm font-bold">Kho tài khoản hiện đang trống hoặc đã bán hết!</p></div>`;
                 return;
             }
 
             grid.innerHTML = avail.map(acc => {
                 const finalPrice = acc.discount > 0 ? acc.price * (1 - acc.discount / 100) : acc.price;
-                const img = (acc.images && acc.images.length > 0) ? acc.images[0] : 'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=600&q=80';
-                
+                const imgUrl = (acc.images && acc.images.length > 0) ? acc.images[0] : 'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=600&q=80';
                 return `
-                    <div class="glass-card glass-card-hover rounded-[2rem] overflow-hidden flex flex-col justify-between shadow-2xl relative border border-slate-800">
-                        ${acc.discount > 0 ? `<span class="absolute top-4 left-4 z-10 bg-gradient-to-r from-red-600 to-rose-600 text-white font-black text-[10px] px-3 py-1 rounded-full shadow-lg uppercase tracking-wider">GIẢM ${acc.discount}%</span>` : ''}
+                    <div class="glass-card glass-card-hover rounded-3xl overflow-hidden flex flex-col justify-between shadow-2xl border border-slate-800">
                         <div>
-                            <div class="relative h-48 overflow-hidden group cursor-pointer" onclick="openLightbox('${img}')">
-                                <img src="${img}" alt="Acc Image" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
-                                <div class="absolute inset-0 bg-gradient-to-t from-[#030712] via-transparent to-transparent opacity-80"></div>
-                                <span class="absolute bottom-3 left-4 px-3 py-1 bg-cyan-500/20 backdrop-blur-md border border-cyan-500/40 text-cyan-300 text-[10px] font-black rounded-xl uppercase tracking-wider">${acc.rank}</span>
+                            <div class="relative h-48 overflow-hidden group cursor-pointer" onclick="openLightbox('${imgUrl}')">
+                                <img src="${imgUrl}" alt="${acc.title}" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+                                ${acc.discount > 0 ? `<span class="absolute top-3 left-3 bg-red-600 text-white text-[10px] font-black px-2.5 py-1 rounded-lg shadow-lg">SALE -${acc.discount}%</span>` : ''}
+                                <span class="absolute top-3 right-3 bg-slate-900/90 text-cyan-400 border border-slate-700 text-[10px] font-black px-2.5 py-1 rounded-lg backdrop-blur-md">ID: #${acc.id}</span>
                             </div>
-                            <div class="p-6 space-y-3">
-                                <h3 class="font-black text-sm text-white line-clamp-2 leading-snug">${acc.title}</h3>
-                                <div class="flex items-baseline space-x-2">
-                                    <span class="text-lg font-black text-emerald-400">${finalPrice.toLocaleString()} đ</span>
-                                    ${acc.discount > 0 ? `<span class="text-xs text-slate-500 line-through font-bold">${acc.price.toLocaleString()} đ</span>` : ''}
+                            <div class="p-5 space-y-3">
+                                <h3 class="font-black text-sm text-white line-clamp-2 tracking-tight">${acc.title}</h3>
+                                <div class="flex items-center justify-between text-xs">
+                                    <span class="text-slate-400 font-medium"><i class="fa-solid fa-shield-halved text-cyan-400 mr-1"></i> Rank: <strong class="text-cyan-300">${acc.rank}</strong></span>
+                                    <span class="text-slate-400 font-medium"><i class="fa-solid fa-server text-emerald-400 mr-1"></i> Server: <strong class="text-emerald-300">VN</strong></span>
                                 </div>
                             </div>
                         </div>
-                        <div class="p-6 pt-0">
-                            <button onclick="buyAccount(${acc.id})" class="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold py-3.5 rounded-2xl text-xs transition shadow-lg shadow-cyan-500/25">
-                                <i class="fa-solid fa-cart-shopping mr-2"></i> Mua Ngay
+                        <div class="p-5 pt-0 border-t border-slate-800/80 mt-4 flex items-center justify-between">
+                            <div>
+                                <span class="text-[10px] text-slate-400 uppercase font-bold block">Giá bán</span>
+                                <span class="text-base font-black text-emerald-400">${finalPrice.toLocaleString()} đ</span>
+                                ${acc.discount > 0 ? `<span class="block text-[10px] text-slate-500 line-through">${acc.price.toLocaleString()} đ</span>` : ''}
+                            </div>
+                            <button onclick="buyAccount(${acc.id})" class="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold px-5 py-2.5 rounded-xl text-xs transition shadow-lg shadow-cyan-500/25">
+                                <i class="fa-solid fa-cart-shopping mr-1.5"></i> Mua Ngay
                             </button>
                         </div>
                     </div>
@@ -1521,7 +1520,7 @@
         }
 
         function filterAccounts() {
-            const keyword = document.getElementById('search-keyword').value.toLowerCase();
+            const keyword = document.getElementById('search-keyword').value.toLowerCase().trim();
             const rank = document.getElementById('search-rank').value;
             const priceRange = document.getElementById('search-price-range').value;
             const sortPrice = document.getElementById('search-sort-price').value;
@@ -1529,7 +1528,7 @@
             let accounts = getAccounts();
 
             if (keyword) {
-                accounts = accounts.filter(a => a.title.toLowerCase().includes(keyword) || String(a.id).includes(keyword));
+                accounts = accounts.filter(a => a.title.toLowerCase().includes(keyword) || a.id.toString().includes(keyword));
             }
             if (rank) {
                 accounts = accounts.filter(a => a.rank === rank);
@@ -1537,15 +1536,21 @@
             if (priceRange) {
                 const [min, max] = priceRange.split('-').map(Number);
                 accounts = accounts.filter(a => {
-                    const price = a.discount > 0 ? a.price * (1 - a.discount / 100) : a.price;
-                    return price >= min && price <= max;
+                    const finalPrice = a.discount > 0 ? a.price * (1 - a.discount / 100) : a.price;
+                    return finalPrice >= min && finalPrice <= max;
                 });
             }
-            if (sortPrice) {
+            if (sortPrice === 'asc') {
                 accounts.sort((a, b) => {
-                    const priceA = a.discount > 0 ? a.price * (1 - a.discount / 100) : a.price;
-                    const priceB = b.discount > 0 ? b.price * (1 - b.discount / 100) : b.price;
-                    return sortPrice === 'asc' ? priceA - priceB : priceB - priceA;
+                    const pA = a.discount > 0 ? a.price * (1 - a.discount / 100) : a.price;
+                    const pB = b.discount > 0 ? b.price * (1 - b.discount / 100) : b.price;
+                    return pA - pB;
+                });
+            } else if (sortPrice === 'desc') {
+                accounts.sort((a, b) => {
+                    const pA = a.discount > 0 ? a.price * (1 - a.discount / 100) : a.price;
+                    const pB = b.discount > 0 ? b.price * (1 - b.discount / 100) : b.price;
+                    return pB - pA;
                 });
             }
 
@@ -1560,16 +1565,7 @@
             renderAccounts();
         }
 
-        function openLightbox(imgSrc) {
-            document.getElementById('lightbox-img').src = imgSrc;
-            document.getElementById('lightbox-modal').classList.remove('hidden');
-        }
-        function closeLightbox() {
-            document.getElementById('lightbox-modal').classList.add('hidden');
-        }
-
-        // Mua tài khoản
-        function buyAccount(accId) {
+        function buyAccount(id) {
             if (!currentUser) {
                 showToast('Vui lòng đăng nhập để mua tài khoản!', 'error');
                 showPage('auth');
@@ -1577,86 +1573,81 @@
             }
 
             let accounts = getAccounts();
-            let accIndex = accounts.findIndex(a => a.id === accId);
+            const accIndex = accounts.findIndex(a => a.id === id);
             if (accIndex === -1 || accounts[accIndex].status !== 'available') {
-                showToast('Tài khoản này không tồn tại hoặc đã được bán!', 'error');
+                showToast('Tài khoản này không còn tồn tại hoặc đã có người mua!', 'error');
                 return;
             }
 
             const acc = accounts[accIndex];
             const finalPrice = acc.discount > 0 ? acc.price * (1 - acc.discount / 100) : acc.price;
 
-            if (currentUser.balance < finalPrice) {
-                showToast('Số dư ví của bạn không đủ để mua tài khoản này. Vui lòng nạp thêm!', 'error');
+            let users = getUsers();
+            const userIndex = users.findIndex(u => u.phone === currentUser.phone);
+            if (userIndex === -1 || users[userIndex].balance < finalPrice) {
+                showToast('Số dư ví của bạn không đủ để mua tài khoản này. Vui lòng nạp thêm tiền!', 'error');
                 showPage('deposit');
                 return;
             }
 
-            let users = getUsers();
-            let userIndex = users.findIndex(u => u.phone === currentUser.phone);
-            if (userIndex !== -1) {
-                users[userIndex].balance -= finalPrice;
-                currentUser = users[userIndex];
-                saveUsers(users);
-                localStorage.setItem('currentUser', JSON.stringify(currentUser));
-            }
+            users[userIndex].balance -= finalPrice;
+            currentUser = users[userIndex];
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            saveUsers(users);
 
             accounts[accIndex].status = 'sold';
-            accounts[accIndex].buyer = currentUser.phone;
             saveAccounts(accounts);
 
             let orders = getOrders();
             orders.unshift({
-                id: 'ORD' + Date.now(),
+                orderId: 'PVH' + Math.floor(100000 + Math.random() * 900000),
                 buyer: currentUser.phone,
                 accId: acc.id,
                 title: acc.title,
                 price: finalPrice,
                 username_game: acc.username_game,
                 password_game: acc.password_game,
-                time: new Date().toLocaleString()
+                time: new Date().toLocaleString('vi-VN')
             });
             saveOrders(orders);
 
-            showToast('Thanh toán mua tài khoản thành công!');
+            showToast('Mua tài khoản thành công! Thông tin đã lưu trong Tủ Đồ của bạn.');
             updateNavbar();
             showPage('history');
         }
 
         function renderUserBoughtAccounts() {
-            const container = document.getElementById('history-list');
-            if (!container) return;
             if (!currentUser) return;
-
+            const container = document.getElementById('history-list');
             const orders = getOrders().filter(o => o.buyer === currentUser.phone);
 
             if (orders.length === 0) {
-                container.innerHTML = `<div class="py-16 text-center text-slate-500 glass-card rounded-[2rem]"><i class="fa-solid fa-box-open text-4xl mb-2 text-slate-600"></i><p class="text-sm font-bold">Bạn chưa mua tài khoản nào.</p></div>`;
+                container.innerHTML = `<div class="py-16 text-center text-slate-500 glass-card rounded-[2rem]"><i class="fa-solid fa-box-open text-4xl mb-2 text-slate-600"></i><p class="text-sm font-bold">Bạn chưa mua tài khoản nào trên hệ thống!</p></div>`;
                 return;
             }
 
-            container.innerHTML = orders.map(ord => `
-                <div class="glass-card p-6 rounded-[2rem] shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                    <div class="space-y-1.5">
-                        <span class="text-[10px] text-cyan-400 font-bold uppercase tracking-wider">Mã đơn: ${ord.id} — ${ord.time}</span>
-                        <h3 class="font-black text-white text-sm md:text-base">${ord.title}</h3>
-                        <p class="text-xs text-emerald-400 font-bold">Giá mua: ${ord.price.toLocaleString()} đ</p>
+            container.innerHTML = orders.map(o => `
+                <div class="glass-card p-6 rounded-3xl shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border border-cyan-500/20">
+                    <div class="space-y-1">
+                        <span class="text-[10px] font-black px-2.5 py-1 bg-cyan-500/10 text-cyan-400 rounded-lg">Mã ĐH: #${o.orderId}</span>
+                        <h4 class="font-black text-sm text-white mt-1">${o.title}</h4>
+                        <p class="text-xs text-slate-400">Thời gian mua: ${o.time} — Giá: <strong class="text-emerald-400">${o.price.toLocaleString()} đ</strong></p>
                     </div>
-                    <div class="bg-[#030712] p-4 rounded-2xl border border-slate-800 space-y-1.5 text-xs font-mono">
-                        <div class="flex items-center space-x-2"><span class="text-slate-400">Tài khoản:</span><span class="text-white font-bold">${ord.username_game}</span></div>
-                        <div class="flex items-center space-x-2"><span class="text-slate-400">Mật khẩu:</span><span class="text-amber-400 font-bold">${ord.password_game}</span></div>
+                    <div class="bg-[#030712] p-4 rounded-2xl border border-slate-800 space-y-1.5 text-xs w-full md:w-auto shadow-inner">
+                        <div class="flex items-center space-x-2">
+                            <span class="text-slate-400 font-medium">Tài khoản Riot:</span>
+                            <span class="font-bold text-cyan-300 font-mono select-all bg-slate-900 px-2.5 py-1 rounded-lg border border-slate-800">${o.username_game}</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-slate-400 font-medium">Mật khẩu Riot:</span>
+                            <span class="font-bold text-amber-300 font-mono select-all bg-slate-900 px-2.5 py-1 rounded-lg border border-slate-800">${o.password_game}</span>
+                        </div>
                     </div>
                 </div>
             `).join('');
         }
 
-        // Tạo mã VietQR Nạp tiền với % thưởng chính xác
-        function formatCurrencyInput(input) {
-            let val = input.value.replace(/\D/g, '');
-            if (!val) { input.value = ''; return; }
-            input.value = Number(val).toLocaleString();
-        }
-
+        let qrCountdownInterval = null;
         function generateVietQR() {
             if (!currentUser) {
                 showToast('Vui lòng đăng nhập để nạp tiền!', 'error');
@@ -1664,9 +1655,8 @@
                 return;
             }
 
-            const rawAmtStr = document.getElementById('deposit-amount-formatted').value.replace(/\D/g, '');
-            const amount = Number(rawAmtStr);
-
+            const rawInput = document.getElementById('deposit-amount-formatted').value.replace(/\D/g, '');
+            const amount = parseInt(rawInput);
             if (!amount || amount < 10000) {
                 showToast('Số tiền nạp tối thiểu là 10,000 đ!', 'error');
                 return;
@@ -1674,59 +1664,108 @@
 
             document.getElementById('deposit-input-box').classList.add('hidden');
             document.getElementById('deposit-loading').classList.remove('hidden');
-            document.getElementById('deposit-qr-box').classList.remove('hidden');
 
             setTimeout(() => {
                 document.getElementById('deposit-loading').classList.add('hidden');
-                const qrConfig = getVietQRConfig();
-                const bonusPercent = Number(localStorage.getItem('admin_bonus_percent') || 0);
-                const bonusAmount = amount * (bonusPercent / 100);
-                const totalCredited = amount + bonusAmount;
+                document.getElementById('deposit-qr-box').classList.remove('hidden');
 
-                currentGeneratedDepositId = 'DEP' + Date.now();
-                const content = `NAP ${currentUser.phone} ${currentGeneratedDepositId}`;
+                const bonusPercent = parseInt(localStorage.getItem('admin_bonus_percent') || '0');
+                const depositId = 'NAP' + Math.floor(100000 + Math.random() * 900000);
+                currentGeneratedDepositId = depositId;
 
-                const qrUrl = `https://img.vietqr.io/image/${qrConfig.bankId}-${qrConfig.accNo}-compact2.png?amount=${amount}&addInfo=${encodeURIComponent(content)}&accountName=${encodeURIComponent(qrConfig.accName)}`;
+                const qrCfg = getVietQRConfig();
+                const bankInfo = VIETNAM_BANKS.find(b => b.id === qrCfg.bankId) || VIETNAM_BANKS[0];
+                const transferContent = `${depositId}`;
 
-                document.getElementById('vietqr-img').src = qrUrl;
-                document.getElementById('qr-bank-name').innerText = qrConfig.bankId.toUpperCase();
-                document.getElementById('qr-acc-number').innerText = qrConfig.accNo;
-                document.getElementById('qr-acc-holder').innerText = qrConfig.accName;
+                document.getElementById('qr-bank-name').innerText = bankInfo.name.split(' - ')[0];
+                document.getElementById('qr-acc-number').innerText = qrCfg.accNo;
+                document.getElementById('qr-acc-holder').innerText = qrCfg.accName;
                 document.getElementById('qr-display-amount').innerText = `${amount.toLocaleString()} đ`;
-                document.getElementById('qr-display-bonus').innerText = `${bonusPercent}% (Khuyến mãi thêm: ${bonusAmount.toLocaleString()} đ | Tổng nhận: ${totalCredited.toLocaleString()} đ)`;
-                document.getElementById('qr-display-content').innerText = content;
+                document.getElementById('qr-display-bonus').innerText = `${bonusPercent}%`;
+                document.getElementById('qr-display-content').innerText = transferContent;
 
-                // Lưu lệnh nạp vào DB ở trạng thái pending
+                const vietqrUrl = `https://img.vietqr.io/image/${qrCfg.bankId}-${qrCfg.accNo}-compact2.png?amount=${amount}&addInfo=${encodeURIComponent(transferContent)}&accountName=${encodeURIComponent(qrCfg.accName)}`;
+                document.getElementById('vietqr-img').src = vietqrUrl;
+
                 let deposits = getDeposits();
                 deposits.unshift({
-                    id: currentGeneratedDepositId,
-                    user: currentUser.phone,
+                    depositId: depositId,
+                    username: currentUser.phone,
                     amount: amount,
                     bonusPercent: bonusPercent,
-                    bonusAmount: bonusAmount,
-                    totalCredited: totalCredited,
-                    time: new Date().toLocaleString(),
+                    time: new Date().toLocaleString('vi-VN'),
                     status: 'pending'
                 });
                 saveDeposits(deposits);
 
-                showToast('Đã tạo mã VietQR nạp tiền thành công!');
+                startQRCountdown();
+                showToast('Đã tạo lệnh nạp tiền tự động thành công!');
             }, 800);
         }
 
+        function startQRCountdown() {
+            if (qrCountdownInterval) clearInterval(qrCountdownInterval);
+            let timeLeft = 15 * 60;
+            const timerEl = document.getElementById('qr-countdown-timer');
+
+            qrCountdownInterval = setInterval(() => {
+                let m = Math.floor(timeLeft / 60);
+                let s = timeLeft % 60;
+                timerEl.innerText = `${m < 10 ? '0' + m : m}:${s < 10 ? '0' + s : s}`;
+                timeLeft--;
+                if (timeLeft < 0) {
+                    clearInterval(qrCountdownInterval);
+                    cancelDeposit();
+                    showToast('Mã QR nạp tiền đã hết hạn!', 'error');
+                }
+            }, 1000);
+        }
+
         function cancelDeposit() {
+            if (qrCountdownInterval) clearInterval(qrCountdownInterval);
             document.getElementById('deposit-qr-box').classList.add('hidden');
             document.getElementById('deposit-input-box').classList.remove('hidden');
+            document.getElementById('deposit-amount-formatted').value = '';
             currentGeneratedDepositId = null;
         }
 
         function confirmPaid() {
-            showToast('Đã gửi xác nhận thanh toán! Admin sẽ duyệt lệnh trong giây lát.');
-            cancelDeposit();
-            showPage('user-history');
+            if (!currentGeneratedDepositId) return;
+            let deposits = getDeposits();
+            const depIndex = deposits.findIndex(d => d.depositId === currentGeneratedDepositId);
+            if (depIndex !== -1) {
+                const dep = deposits[depIndex];
+                
+                // Admin nạp tiền cộng thẳng vào ví, không cần duyệt, hiện trạng thái Đã hoàn tất và icon tích xanh
+                deposits[depIndex].status = 'completed';
+                saveDeposits(deposits);
+
+                const bonusAmount = (dep.amount * dep.bonusPercent) / 100;
+                const totalReceive = dep.amount + bonusAmount;
+
+                let users = getUsers();
+                const userIndex = users.findIndex(u => u.phone === dep.username);
+                if (userIndex !== -1) {
+                    users[userIndex].balance += totalReceive;
+                    if (currentUser && currentUser.phone === users[userIndex].phone) {
+                        currentUser = users[userIndex];
+                        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                    }
+                    saveUsers(users);
+                }
+
+                showToast(`Nạp tiền thành công! Hệ thống đã cộng thẳng ${totalReceive.toLocaleString()} đ vào ví.`);
+                updateNavbar();
+                cancelDeposit();
+            }
         }
 
-        // Rút tiền
+        function formatCurrencyInput(input) {
+            let val = input.value.replace(/\D/g, '');
+            if (!val) { input.value = ''; return; }
+            input.value = parseInt(val).toLocaleString('vi-VN');
+        }
+
         function handleWithdrawSubmit(e) {
             e.preventDefault();
             if (!currentUser) return;
@@ -1734,8 +1773,8 @@
             const bank = document.getElementById('withdraw-bank').value;
             const accNo = document.getElementById('withdraw-acc-no').value.trim();
             const accName = document.getElementById('withdraw-acc-name').value.trim();
-            const rawAmt = document.getElementById('withdraw-amount').value.replace(/\D/g, '');
-            const amount = Number(rawAmt);
+            const rawAmount = document.getElementById('withdraw-amount').value.replace(/\D/g, '');
+            const amount = parseInt(rawAmount);
 
             if (!amount || amount < 50000) {
                 showToast('Số tiền rút tối thiểu là 50,000 đ!', 'error');
@@ -1747,59 +1786,70 @@
                 return;
             }
 
-            // Trừ tiền ví ngay lập tức khi tạo lệnh rút chờ duyệt
             let users = getUsers();
-            let uIdx = users.findIndex(u => u.phone === currentUser.phone);
-            if (uIdx !== -1) {
-                users[uIdx].balance -= amount;
-                currentUser = users[uIdx];
-                saveUsers(users);
-                localStorage.setItem('currentUser', JSON.stringify(currentUser));
-            }
+            const userIndex = users.findIndex(u => u.phone === currentUser.phone);
+            users[userIndex].balance -= amount;
+            currentUser = users[userIndex];
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            saveUsers(users);
 
             let withdraws = getWithdraws();
+            const isUserAdmin = (currentUser.role === 'admin');
+            const initialStatus = isUserAdmin ? 'completed' : 'pending';
+
             withdraws.unshift({
-                id: 'WD' + Date.now(),
-                user: currentUser.phone,
-                bank: bank.toUpperCase(),
+                withdrawId: 'RUT' + Math.floor(100000 + Math.random() * 900000),
+                username: currentUser.phone,
+                bank: bank,
                 accNo: accNo,
                 accName: accName,
                 amount: amount,
-                time: new Date().toLocaleString(),
-                status: 'pending'
+                time: new Date().toLocaleString('vi-VN'),
+                status: initialStatus
             });
             saveWithdraws(withdraws);
 
-            showToast('Gửi yêu cầu rút tiền thành công! Đang chờ Admin xét duyệt.');
+            if (isUserAdmin) {
+                showToast('Admin rút tiền thành công! Đã tự động hoàn tất.');
+            } else {
+                showToast('Gửi yêu cầu rút tiền thành công! Vui lòng chờ quản trị viên duyệt.');
+            }
+
             document.getElementById('withdraw-acc-no').value = '';
             document.getElementById('withdraw-acc-name').value = '';
             document.getElementById('withdraw-amount').value = '';
+            document.getElementById('withdraw-user-balance').innerText = `${currentUser.balance.toLocaleString()} đ`;
             updateNavbar();
             renderWithdrawHistory();
         }
 
         function renderWithdrawHistory() {
+            if (!currentUser) return;
             const tbody = document.getElementById('withdraw-history-table');
-            if (!tbody || !currentUser) return;
-            const withdraws = getWithdraws().filter(w => w.user === currentUser.phone);
+            const withdraws = getWithdraws().filter(w => w.username === currentUser.phone);
 
             if (withdraws.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-500">Chưa có lịch sử rút tiền nào.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-500 font-medium">Chưa có lịch sử rút tiền nào.</td></tr>`;
                 return;
             }
 
             tbody.innerHTML = withdraws.map(w => {
-                let badge = `<span class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30">Đang chờ duyệt</span>`;
-                if (w.status === 'approved') badge = `<span class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">Thành công</span>`;
-                if (w.status === 'rejected') badge = `<span class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-red-500/20 text-red-400 border border-red-500/30">Đã hủy</span>`;
+                let statusBadge = '';
+                if (w.status === 'pending') {
+                    statusBadge = `<span class="inline-flex items-center space-x-1.5 px-2.5 py-1 bg-amber-500/10 text-amber-400 border border-amber-500/30 rounded-lg text-[10px] font-bold"><i class="fa-solid fa-spinner fa-spin"></i><span>Đang xử lý</span></span>`;
+                } else if (w.status === 'completed') {
+                    statusBadge = `<span class="inline-flex items-center space-x-1.5 px-2.5 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 rounded-lg text-[10px] font-bold"><i class="fa-solid fa-circle-check text-emerald-400"></i><span>Đã hoàn tất</span></span>`;
+                } else {
+                    statusBadge = `<span class="inline-flex items-center space-x-1.5 px-2.5 py-1 bg-red-500/10 text-red-400 border border-red-500/30 rounded-lg text-[10px] font-bold"><i class="fa-solid fa-circle-xmark"></i><span>Đã hủy</span></span>`;
+                }
 
                 return `
-                    <tr class="border-b border-slate-800/80">
-                        <td class="p-3.5 font-bold text-cyan-400">${w.bank}</td>
-                        <td class="p-3.5"><span class="font-mono text-white">${w.accNo}</span><br><span class="text-[10px] text-slate-400 uppercase">${w.accName}</span></td>
+                    <tr class="hover:bg-slate-900/50 transition">
+                        <td class="p-3.5 font-bold text-cyan-400 uppercase">${w.bank}</td>
+                        <td class="p-3.5"><strong class="text-white">${w.accNo}</strong><br><span class="text-slate-400">${w.accName}</span></td>
                         <td class="p-3.5 font-black text-emerald-400">${w.amount.toLocaleString()} đ</td>
-                        <td class="p-3.5 text-slate-400 text-[11px]">${w.time}</td>
-                        <td class="p-3.5">${badge}</td>
+                        <td class="p-3.5 text-slate-400">${w.time}</td>
+                        <td class="p-3.5">${statusBadge}</td>
                     </tr>
                 `;
             }).join('');
@@ -1807,77 +1857,70 @@
 
         function switchUserHistoryTab(tab) {
             const depBox = document.getElementById('user-history-deposit-box');
-            const wdBox = document.getElementById('user-history-withdraw-box');
+            const withBox = document.getElementById('user-history-withdraw-box');
             const tabDep = document.getElementById('tab-user-deposits');
-            const tabWd = document.getElementById('tab-user-withdraws');
+            const tabWith = document.getElementById('tab-user-withdraws');
 
             if (tab === 'deposits') {
                 depBox.classList.remove('hidden');
-                wdBox.classList.add('hidden');
+                withBox.classList.add('hidden');
                 tabDep.className = 'font-bold text-cyan-400 border-b-2 border-cyan-400 pb-2 text-xs md:text-sm transition uppercase tracking-wider';
-                tabWd.className = 'font-bold text-slate-400 pb-2 text-xs md:text-sm transition uppercase tracking-wider';
+                tabWith.className = 'font-bold text-slate-400 pb-2 text-xs md:text-sm transition uppercase tracking-wider';
             } else {
-                wdBox.classList.remove('hidden');
+                withBox.classList.remove('hidden');
                 depBox.classList.add('hidden');
-                tabWd.className = 'font-bold text-cyan-400 border-b-2 border-cyan-400 pb-2 text-xs md:text-sm transition uppercase tracking-wider';
+                tabWith.className = 'font-bold text-cyan-400 border-b-2 border-cyan-400 pb-2 text-xs md:text-sm transition uppercase tracking-wider';
                 tabDep.className = 'font-bold text-slate-400 pb-2 text-xs md:text-sm transition uppercase tracking-wider';
             }
         }
 
         function renderUserHistoryTables() {
             if (!currentUser) return;
-            // Lịch sử nạp
             const depTbody = document.getElementById('user-deposit-history-table');
-            const deposits = getDeposits().filter(d => d.user === currentUser.phone);
-            if (depTbody) {
-                if (deposits.length === 0) {
-                    depTbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-500">Chưa có lịch sử nạp tiền nào.</td></tr>`;
-                } else {
-                    depTbody.innerHTML = deposits.map(d => {
-                        let badge = `<span class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30">Chờ duyệt</span>`;
-                        if (d.status === 'approved') badge = `<span class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">Thành công</span>`;
-                        if (d.status === 'rejected') badge = `<span class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-red-500/20 text-red-400 border border-red-500/30">Từ chối</span>`;
+            const deposits = getDeposits().filter(d => d.username === currentUser.phone);
 
-                        return `
-                            <tr class="border-b border-slate-800/80">
-                                <td class="p-3.5 font-mono text-cyan-400">${d.id}</td>
-                                <td class="p-3.5 font-bold text-white">${d.amount.toLocaleString()} đ</td>
-                                <td class="p-3.5 text-cyan-300">${d.bonusPercent || 0}% (+${(d.bonusAmount || 0).toLocaleString()} đ)</td>
-                                <td class="p-3.5 text-slate-400 text-[11px]">${d.time}</td>
-                                <td class="p-3.5">${badge}</td>
-                            </tr>
-                        `;
-                    }).join('');
-                }
+            if (deposits.length === 0) {
+                depTbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-500 font-medium">Chưa có lịch sử nạp tiền nào.</td></tr>`;
+            } else {
+                depTbody.innerHTML = deposits.map(d => {
+                    let st = d.status === 'completed' 
+                        ? `<span class="inline-flex items-center space-x-1.5 px-2.5 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 rounded-lg text-[10px] font-bold"><i class="fa-solid fa-circle-check text-emerald-400"></i><span>Đã hoàn tất</span></span>`
+                        : `<span class="inline-flex items-center space-x-1.5 px-2.5 py-1 bg-amber-500/10 text-amber-400 border border-amber-500/30 rounded-lg text-[10px] font-bold"><i class="fa-solid fa-spinner fa-spin"></i><span>Đang xử lý</span></span>`;
+                    return `
+                        <tr class="hover:bg-slate-900/50 transition">
+                            <td class="p-3.5 font-bold text-cyan-400">#${d.depositId}</td>
+                            <td class="p-3.5 font-black text-emerald-400">${d.amount.toLocaleString()} đ</td>
+                            <td class="p-3.5 font-bold text-cyan-300">${d.bonusPercent}%</td>
+                            <td class="p-3.5 text-slate-400">${d.time}</td>
+                            <td class="p-3.5">${st}</td>
+                        </tr>
+                    `;
+                }).join('');
             }
 
-            // Lịch sử rút
-            const wdTbody = document.getElementById('user-withdraw-history-table');
-            const withdraws = getWithdraws().filter(w => w.user === currentUser.phone);
-            if (wdTbody) {
-                if (withdraws.length === 0) {
-                    wdTbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-500">Chưa có lịch sử rút tiền nào.</td></tr>`;
-                } else {
-                    wdTbody.innerHTML = withdraws.map(w => {
-                        let badge = `<span class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30">Đang chờ</span>`;
-                        if (w.status === 'approved') badge = `<span class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">Thành công</span>`;
-                        if (w.status === 'rejected') badge = `<span class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-red-500/20 text-red-400 border border-red-500/30">Đã hủy</span>`;
-
-                        return `
-                            <tr class="border-b border-slate-800/80">
-                                <td class="p-3.5 font-bold text-cyan-400">${w.bank}</td>
-                                <td class="p-3.5"><span class="font-mono text-white">${w.accNo}</span><br><span class="text-[10px] text-slate-400 uppercase">${w.accName}</span></td>
-                                <td class="p-3.5 font-black text-emerald-400">${w.amount.toLocaleString()} đ</td>
-                                <td class="p-3.5 text-slate-400 text-[11px]">${w.time}</td>
-                                <td class="p-3.5">${badge}</td>
-                            </tr>
-                        `;
-                    }).join('');
-                }
+            const withTbody = document.getElementById('user-withdraw-history-table');
+            const withdraws = getWithdraws().filter(w => w.username === currentUser.phone);
+            if (withdraws.length === 0) {
+                withTbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-500 font-medium">Chưa có lịch sử rút tiền nào.</td></tr>`;
+            } else {
+                withTbody.innerHTML = withdraws.map(w => {
+                    let st = w.status === 'completed'
+                        ? `<span class="inline-flex items-center space-x-1.5 px-2.5 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 rounded-lg text-[10px] font-bold"><i class="fa-solid fa-circle-check text-emerald-400"></i><span>Đã hoàn tất</span></span>`
+                        : `<span class="inline-flex items-center space-x-1.5 px-2.5 py-1 bg-amber-500/10 text-amber-400 border border-amber-500/30 rounded-lg text-[10px] font-bold"><i class="fa-solid fa-spinner fa-spin"></i><span>Đang xử lý</span></span>`;
+                    return `
+                        <tr class="hover:bg-slate-900/50 transition">
+                            <td class="p-3.5 font-bold text-cyan-400 uppercase">${w.bank}</td>
+                            <td class="p-3.5"><strong class="text-white">${w.accNo}</strong><br><span class="text-slate-400">${w.accName}</span></td>
+                            <td class="p-3.5 font-black text-emerald-400">${w.amount.toLocaleString()} đ</td>
+                            <td class="p-3.5 text-slate-400">${w.time}</td>
+                            <td class="p-3.5">${st}</td>
+                        </tr>
+                    `;
+                }).join('');
             }
         }
 
-        // ================= ADMIN DASHBOARD =================
+        // --- DASHBOARD ADMIN ---
         function renderAdminDashboard() {
             const accounts = getAccounts();
             const orders = getOrders();
@@ -1885,22 +1928,9 @@
             const withdraws = getWithdraws();
             const users = getUsers();
 
-            // Cấu hình % thưởng (tránh reset giá trị khi admin đang nhập)
-            const bonusInput = document.getElementById('admin-bonus-percent');
-            if (bonusInput && document.activeElement !== bonusInput) {
-                bonusInput.value = localStorage.getItem('admin_bonus_percent') || '0';
-            }
-
-            // Cấu hình CCCD admin
-            const adminCccdSet = document.getElementById('admin-cccd-setting');
-            if (adminCccdSet && document.activeElement !== adminCccdSet) {
-                adminCccdSet.value = localStorage.getItem('admin_cccd') || '035202000000';
-            }
-
-            // Thống kê
             const revenue = orders.reduce((sum, o) => sum + o.price, 0);
             const pendingDepCount = deposits.filter(d => d.status === 'pending').length;
-            const totalUserBal = users.reduce((sum, u) => sum + (u.balance || 0), 0);
+            const totalUserBal = users.reduce((sum, u) => sum + u.balance, 0);
             const availAccCount = accounts.filter(a => a.status === 'available').length;
 
             document.getElementById('stat-revenue').innerText = `${revenue.toLocaleString()} đ`;
@@ -1908,7 +1938,6 @@
             document.getElementById('stat-user-balance').innerText = `${totalUserBal.toLocaleString()} đ`;
             document.getElementById('stat-avail-accs').innerText = availAccCount;
 
-            // Server status
             const serverCfg = getServerConfig();
             const badge = document.getElementById('server-status-badge');
             const btnToggle = document.getElementById('btn-toggle-server');
@@ -1919,67 +1948,197 @@
                 btnToggle.innerText = 'Tắt Server';
             } else {
                 badge.className = 'px-3.5 py-1.5 rounded-xl text-xs font-bold bg-red-500/20 text-red-400 border border-red-500/30';
-                badge.innerText = 'Đang Tắt (Bảo trì)';
+                badge.innerText = 'Đã Tắt (Bảo Trì)';
                 btnToggle.className = 'bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl text-xs font-bold transition shadow-lg shadow-emerald-600/20';
-                btnToggle.innerText = 'Mở Server';
+                btnToggle.innerText = 'Bật Lại Server';
             }
 
-            // Duyệt nạp tiền
-            const adminDepTbody = document.getElementById('admin-pending-deposit-table');
-            const pendingDeposits = deposits.filter(d => d.status === 'pending');
-            if (pendingDeposits.length === 0) {
-                adminDepTbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-500">Không có lệnh nạp nào chờ duyệt.</td></tr>`;
+            // Render Duyệt Nạp
+            const pendingDepTable = document.getElementById('admin-pending-deposit-table');
+            const pendingDeps = deposits.filter(d => d.status === 'pending');
+            if (pendingDeps.length === 0) {
+                pendingDepTable.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-500 font-medium">Không có lệnh nạp nào cần duyệt.</td></tr>`;
             } else {
-                adminDepTbody.innerHTML = pendingDeposits.map(d => `
-                    <tr class="border-b border-slate-800/80">
-                        <td class="p-3 font-bold text-cyan-400">${d.user}</td>
-                        <td class="p-3 font-black text-white">${d.amount.toLocaleString()} đ</td>
-                        <td class="p-3 text-cyan-300">${d.bonusPercent || 0}% (+${(d.bonusAmount || 0).toLocaleString()} đ)</td>
-                        <td class="p-3 space-x-2">
-                            <button onclick="approveDeposit('${d.id}')" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg text-[11px] shadow">Duyệt</button>
-                            <button onclick="rejectDeposit('${d.id}')" class="px-3 py-1.5 bg-red-600 hover:bg-red-500 text-white font-bold rounded-lg text-[11px] shadow">Hủy</button>
+                pendingDepTable.innerHTML = pendingDeps.map(d => `
+                    <tr class="hover:bg-slate-900/50 transition">
+                        <td class="p-3 font-bold text-cyan-300">${d.username}</td>
+                        <td class="p-3 font-black text-emerald-400">${d.amount.toLocaleString()} đ</td>
+                        <td class="p-3 font-bold text-cyan-400">${d.bonusPercent}%</td>
+                        <td class="p-3 flex space-x-2">
+                            <button onclick="adminApproveDeposit('${d.depositId}')" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow"><i class="fa-solid fa-check mr-1"></i> Duyệt (Cộng Thẳng Ví)</button>
                         </td>
                     </tr>
                 `).join('');
             }
 
-            // Duyệt rút tiền
-            const adminWdTbody = document.getElementById('admin-pending-withdraw-table');
-            const pendingWithdraws = withdraws.filter(w => w.status === 'pending');
-            if (pendingWithdraws.length === 0) {
-                adminWdTbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-500">Không có lệnh rút nào chờ duyệt.</td></tr>`;
+            // Render Duyệt Rút
+            const pendingWithTable = document.getElementById('admin-pending-withdraw-table');
+            const pendingWiths = withdraws.filter(w => w.status === 'pending');
+            if (pendingWiths.length === 0) {
+                pendingWithTable.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-500 font-medium">Không có lệnh rút nào cần duyệt.</td></tr>`;
             } else {
-                adminWdTbody.innerHTML = pendingWithdraws.map(w => `
-                    <tr class="border-b border-slate-800/80">
-                        <td class="p-3 font-bold text-cyan-400">${w.user}</td>
-                        <td class="p-3"><span class="font-bold text-white">${w.bank}</span><br><span class="font-mono text-[10px] text-slate-400">${w.accNo} (${w.accName})</span></td>
+                pendingWithTable.innerHTML = pendingWiths.map(w => `
+                    <tr class="hover:bg-slate-900/50 transition">
+                        <td class="p-3 font-bold text-cyan-300">${w.username}</td>
+                        <td class="p-3"><strong class="text-white">${w.bank}</strong><br><span class="text-slate-400">${w.accNo}</span></td>
                         <td class="p-3 font-black text-emerald-400">${w.amount.toLocaleString()} đ</td>
-                        <td class="p-3 space-x-2">
-                            <button onclick="approveWithdraw('${w.id}')" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg text-[11px] shadow">Duyệt</button>
-                            <button onclick="rejectWithdraw('${w.id}')" class="px-3 py-1.5 bg-red-600 hover:bg-red-500 text-white font-bold rounded-lg text-[11px] shadow">Hủy</button>
+                        <td class="p-3 flex space-x-2">
+                            <button onclick="adminApproveWithdraw('${w.withdrawId}')" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow"><i class="fa-solid fa-check mr-1"></i> Duyệt Ngay</button>
                         </td>
                     </tr>
                 `).join('');
             }
 
-            // Quản lý thành viên (Fix lỗi bàn phím bị văng khi gõ input bằng cách tách biệt render hoặc dùng onchange/blur hợp lý, ở đây dùng input value bind nhẹ nhàng)
-            renderAdminUsersTable(users);
-            renderAdminAccountsTable(accounts);
-            renderAdminVerifiedList();
+            // Render Quản lý Thành Viên (Có nút Sửa để chống văng bàn phím)
+            const adminUsersTable = document.getElementById('admin-users-table');
+            adminUsersTable.innerHTML = users.map((u, idx) => `
+                <tr class="hover:bg-slate-900/50 transition">
+                    <td class="p-3.5">
+                        <span id="user-phone-view-${idx}" class="font-bold text-cyan-400">${u.phone}</span>
+                        <input type="text" id="user-phone-edit-${idx}" value="${u.phone}" class="w-full bg-[#030712] border border-cyan-500 rounded-lg px-2 py-1 text-xs text-white hidden font-mono">
+                    </td>
+                    <td class="p-3.5">
+                        <span id="user-pass-view-${idx}" class="text-slate-400 font-mono">••••••••</span>
+                        <input type="text" id="user-pass-edit-${idx}" value="${u.password}" class="w-full bg-[#030712] border border-cyan-500 rounded-lg px-2 py-1 text-xs text-white hidden font-mono">
+                    </td>
+                    <td class="p-3.5">
+                        <span id="user-bal-view-${idx}" class="font-black text-emerald-400">${u.balance.toLocaleString()} đ</span>
+                        <input type="number" id="user-bal-edit-${idx}" value="${u.balance}" class="w-full bg-[#030712] border border-cyan-500 rounded-lg px-2 py-1 text-xs text-white hidden font-mono">
+                    </td>
+                    <td class="p-3.5 font-bold uppercase text-amber-300">${u.role || 'user'}</td>
+                    <td class="p-3.5 flex items-center space-x-2">
+                        <button id="btn-edit-user-${idx}" onclick="toggleEditUserRow(${idx})" class="bg-cyan-600 hover:bg-cyan-500 text-white px-2.5 py-1.5 rounded-lg text-xs font-bold transition shadow"><i class="fa-solid fa-pen-to-square mr-1"></i> Sửa</button>
+                        <button id="btn-save-user-${idx}" onclick="saveEditUserRow(${idx}, '${u.phone}')" class="bg-emerald-600 hover:bg-emerald-500 text-white px-2.5 py-1.5 rounded-lg text-xs font-bold transition shadow hidden"><i class="fa-solid fa-floppy-disk mr-1"></i> Xác nhận</button>
+                        ${u.role !== 'admin' ? `<button onclick="deleteUser('${u.phone}')" class="bg-red-600 hover:bg-red-500 text-white px-2.5 py-1.5 rounded-lg text-xs font-bold transition shadow"><i class="fa-solid fa-trash"></i></button>` : ''}
+                    </td>
+                </tr>
+            `).join('');
+
+            // Render Kho Acc
+            const adminAccTable = document.getElementById('admin-accounts-table');
+            adminAccTable.innerHTML = accounts.map(a => `
+                <tr class="hover:bg-slate-900/50 transition">
+                    <td class="p-3 font-bold text-cyan-400">#${a.id}</td>
+                    <td class="p-3"><strong class="text-white">${a.title}</strong><br><span class="text-[10px] text-slate-400">Rank: ${a.rank} | Riot: ${a.username_game}</span></td>
+                    <td class="p-3"><input type="number" id="edit-price-${a.id}" value="${a.price}" class="w-28 bg-[#030712] border border-slate-800 rounded-lg px-2 py-1 text-xs text-white"></td>
+                    <td class="p-3"><input type="number" id="edit-discount-${a.id}" value="${a.discount}" min="0" max="90" class="w-16 bg-[#030712] border border-slate-800 rounded-lg px-2 py-1 text-xs text-white"></td>
+                    <td class="p-3"><img src="${a.images && a.images.length > 0 ? a.images[0] : ''}" class="w-10 h-10 object-cover rounded-lg border border-slate-800"></td>
+                    <td class="p-3 flex space-x-2">
+                        <button onclick="saveAdminEditAccount(${a.id})" class="bg-cyan-600 hover:bg-cyan-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow"><i class="fa-solid fa-floppy-disk mr-1"></i> Lưu</button>
+                        <button onclick="deleteSingleAccount(${a.id})" class="bg-red-600 hover:bg-red-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+
+            // Render Danh sách SĐT & CCCD đã xác minh
+            const verifiedTable = document.getElementById('admin-verified-list-table');
+            const verifiedList = getVerifiedInfos();
+            if (verifiedList.length === 0) {
+                verifiedTable.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-500 font-medium">Chưa có thông tin xác minh độc quyền nào.</td></tr>`;
+            } else {
+                verifiedTable.innerHTML = verifiedList.map((v, idx) => `
+                    <tr class="hover:bg-slate-900/50 transition">
+                        <td class="p-3 font-bold text-cyan-400">#${idx + 1}</td>
+                        <td class="p-3 font-mono text-cyan-300">${v.phone}</td>
+                        <td class="p-3 font-mono text-amber-300">${v.cccd}</td>
+                        <td class="p-3"><button onclick="removeVerifiedInfo(${idx})" class="bg-red-600 hover:bg-red-500 text-white px-2.5 py-1 rounded-lg text-xs font-bold shadow"><i class="fa-solid fa-trash"></i> Xóa</button></td>
+                    </tr>
+                `).join('');
+            }
         }
 
-        // Cập nhật cấu hình % thưởng nạp tiền
-        function saveAdminBonusPercent() {
-            const val = Number(document.getElementById('admin-bonus-percent').value);
-            if (isNaN(val) || val < 0 || val > 100) {
-                showToast('Vui lòng nhập tỷ lệ % thưởng từ 0 đến 100!', 'error');
+        // Hàm bật/tắt chế độ sửa user row để tránh văng bàn phím
+        function toggleEditUserRow(idx) {
+            const phoneView = document.getElementById(`user-phone-view-${idx}`);
+            const phoneEdit = document.getElementById(`user-phone-edit-${idx}`);
+            const passView = document.getElementById(`user-pass-view-${idx}`);
+            const passEdit = document.getElementById(`user-pass-edit-${idx}`);
+            const balView = document.getElementById(`user-bal-view-${idx}`);
+            const balEdit = document.getElementById(`user-bal-edit-${idx}`);
+            const btnEdit = document.getElementById(`btn-edit-user-${idx}`);
+            const btnSave = document.getElementById(`btn-save-user-${idx}`);
+
+            phoneView.classList.toggle('hidden');
+            phoneEdit.classList.toggle('hidden');
+            passView.classList.toggle('hidden');
+            passEdit.classList.toggle('hidden');
+            balView.classList.toggle('hidden');
+            balEdit.classList.toggle('hidden');
+            btnEdit.classList.toggle('hidden');
+            btnSave.classList.toggle('hidden');
+        }
+
+        function saveEditUserRow(idx, originalPhone) {
+            const newPhone = document.getElementById(`user-phone-edit-${idx}`).value.trim();
+            const newPass = document.getElementById(`user-pass-edit-${idx}`).value.trim();
+            const newBal = parseInt(document.getElementById(`user-bal-edit-${idx}`).value);
+
+            if (!newPhone || !newPass || isNaN(newBal)) {
+                showToast('Vui lòng nhập đầy đủ thông tin hợp lệ!', 'error');
                 return;
             }
-            localStorage.setItem('admin_bonus_percent', val);
-            showToast(`Đã lưu cấu hình thưởng nạp tiền: ${val}% thành công!`);
+
+            let users = getUsers();
+            const userIdx = users.findIndex(u => u.phone === originalPhone);
+            if (userIdx !== -1) {
+                users[userIdx].phone = newPhone;
+                users[userIdx].password = newPass;
+                users[userIdx].balance = newBal;
+                saveUsers(users);
+                showToast('Cập nhật thông tin thành viên thành công!');
+                renderAdminDashboard();
+            }
         }
 
-        // Cập nhật CCCD Admin
+        function adminApproveDeposit(depositId) {
+            let deposits = getDeposits();
+            const dIdx = deposits.findIndex(d => d.depositId === depositId);
+            if (dIdx !== -1) {
+                deposits[dIdx].status = 'completed';
+                saveDeposits(deposits);
+
+                const dep = deposits[dIdx];
+                const bonus = (dep.amount * dep.bonusPercent) / 100;
+                const total = dep.amount + bonus;
+
+                let users = getUsers();
+                const uIdx = users.findIndex(u => u.phone === dep.username);
+                if (uIdx !== -1) {
+                    users[uIdx].balance += total;
+                    saveUsers(users);
+                }
+
+                showToast(`Đã duyệt nạp tiền thành công! Cộng thẳng ${total.toLocaleString()} đ vào ví.`);
+                renderAdminDashboard();
+            }
+        }
+
+        function adminApproveWithdraw(withdrawId) {
+            let withdraws = getWithdraws();
+            const wIdx = withdraws.findIndex(w => w.withdrawId === withdrawId);
+            if (wIdx !== -1) {
+                withdraws[wIdx].status = 'completed';
+                saveWithdraws(withdraws);
+                showToast('Đã duyệt lệnh rút tiền hoàn tất!');
+                renderAdminDashboard();
+            }
+        }
+
+        function deleteUser(phone) {
+            if (confirm(`Bạn có chắc muốn xóa thành viên ${phone}?`)) {
+                let users = getUsers().filter(u => u.phone !== phone);
+                saveUsers(users);
+                showToast('Đã xóa thành viên!');
+                renderAdminDashboard();
+            }
+        }
+
+        function saveAdminBonusPercent() {
+            const val = document.getElementById('admin-bonus-percent').value;
+            localStorage.setItem('admin_bonus_percent', val);
+            showToast('Lưu tỷ lệ % thưởng nạp thành công!');
+        }
+
         function saveAdminCCCD() {
             const val = document.getElementById('admin-cccd-setting').value.trim();
             if (val.length !== 12) {
@@ -1987,10 +2146,9 @@
                 return;
             }
             localStorage.setItem('admin_cccd', val);
-            showToast('Đã lưu cấu hình số CCCD Admin thành công!');
+            showToast('Lưu số CCCD Admin thành công!');
         }
 
-        // Quản lý SĐT & CCCD độc quyền
         function handleAdminAddVerifiedInfo() {
             const phone = document.getElementById('admin-verify-phone').value.trim();
             const cccd = document.getElementById('admin-verify-cccd').value.trim();
@@ -2000,167 +2158,49 @@
                 return;
             }
 
-            let list = getVerifiedInfos();
-            if (list.some(v => v.phone === phone || v.cccd === cccd)) {
+            let verifiedList = getVerifiedInfos();
+            if (verifiedList.some(v => v.phone === phone || v.cccd === cccd)) {
                 showToast('SĐT hoặc CCCD này đã tồn tại trong danh sách xác minh!', 'error');
                 return;
             }
 
-            list.push({ phone, cccd });
-            saveVerifiedInfos(list);
+            verifiedList.push({ phone, cccd });
+            saveVerifiedInfos(verifiedList);
             document.getElementById('admin-verify-phone').value = '';
             document.getElementById('admin-verify-cccd').value = '';
             showToast('Thêm thông tin xác minh độc quyền thành công!');
             renderAdminDashboard();
         }
 
-        function renderAdminVerifiedList() {
-            const tbody = document.getElementById('admin-verified-list-table');
-            if (!tbody) return;
-            const list = getVerifiedInfos();
-            if (list.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-500">Chưa có thông tin xác minh nào.</td></tr>`;
-                return;
-            }
-            tbody.innerHTML = list.map((v, index) => `
-                <tr class="border-b border-slate-800/80">
-                    <td class="p-3 font-mono text-slate-400">${index + 1}</td>
-                    <td class="p-3 font-mono font-bold text-cyan-400">${v.phone}</td>
-                    <td class="p-3 font-mono font-bold text-amber-400">${v.cccd}</td>
-                    <td class="p-3">
-                        <button onclick="removeVerifiedInfo(${index})" class="px-2.5 py-1 bg-red-600/20 border border-red-500/30 text-red-400 rounded-lg text-[11px] font-bold hover:bg-red-600 hover:text-white transition">Xóa</button>
-                    </td>
-                </tr>
-            `).join('');
-        }
-
-        function removeVerifiedInfo(index) {
-            let list = getVerifiedInfos();
-            list.splice(index, 1);
-            saveVerifiedInfos(list);
+        function removeVerifiedInfo(idx) {
+            let verifiedList = getVerifiedInfos();
+            verifiedList.splice(idx, 1);
+            saveVerifiedInfos(verifiedList);
             showToast('Đã xóa thông tin xác minh!');
             renderAdminDashboard();
         }
 
-        // Duyệt nạp tiền
-        function approveDeposit(depId) {
-            let deposits = getDeposits();
-            let dep = deposits.find(d => d.id === depId);
-            if (!dep || dep.status !== 'pending') return;
-
-            dep.status = 'approved';
-            saveDeposits(deposits);
-
-            let users = getUsers();
-            let user = users.find(u => u.phone === dep.user);
-            if (user) {
-                user.balance += dep.totalCredited;
-                saveUsers(users);
-            }
-
-            showToast(`Đã duyệt nạp thành công ${dep.totalCredited.toLocaleString()} đ cho ${dep.user}!`);
+        function toggleServerStatus() {
+            let serverCfg = getServerConfig();
+            const reason = document.getElementById('server-close-reason').value.trim();
+            serverCfg.isOnline = !serverCfg.isOnline;
+            serverCfg.reason = reason;
+            saveServerConfig(serverCfg);
+            showToast(serverCfg.isOnline ? 'Đã bật lại Server!' : 'Đã tắt Server (Bảo trì)!');
             renderAdminDashboard();
         }
 
-        function rejectDeposit(depId) {
-            let deposits = getDeposits();
-            let dep = deposits.find(d => d.id === depId);
-            if (dep) {
-                dep.status = 'rejected';
-                saveDeposits(deposits);
-                showToast('Đã từ chối lệnh nạp tiền!');
-                renderAdminDashboard();
+        function resetFullSystemData() {
+            if (confirm('CẢNH BÁO: Thao tác này sẽ xóa sạch dữ liệu toàn trang! Bạn có chắc chắn không?')) {
+                localStorage.clear();
+                initDatabase();
+                currentUser = null;
+                showToast('Đã reset toàn bộ hệ thống về ban đầu!');
+                updateNavbar();
+                showPage('home');
             }
         }
 
-        // Duyệt rút tiền
-        function approveWithdraw(wdId) {
-            let withdraws = getWithdraws();
-            let wd = withdraws.find(w => w.id === wdId);
-            if (wd) {
-                wd.status = 'approved';
-                saveWithdraws(withdraws);
-                showToast('Đã duyệt lệnh rút tiền thành công!');
-                renderAdminDashboard();
-            }
-        }
-
-        function rejectWithdraw(wdId) {
-            let withdraws = getWithdraws();
-            let wd = withdraws.find(w => w.id === wdId);
-            if (wd && wd.status === 'pending') {
-                wd.status = 'rejected';
-                saveWithdraws(withdraws);
-
-                // Hoàn tiền về ví user
-                let users = getUsers();
-                let user = users.find(u => u.phone === wd.user);
-                if (user) {
-                    user.balance += wd.amount;
-                    saveUsers(users);
-                }
-
-                showToast('Đã hủy lệnh rút tiền và hoàn lại số dư cho user!');
-                renderAdminDashboard();
-            }
-        }
-
-        // Quản lý thành viên (sửa thông tin trực tiếp bằng input tránh mất focus/văng bàn phím)
-        function renderAdminUsersTable(users) {
-            const tbody = document.getElementById('admin-users-table');
-            if (!tbody) return;
-
-            tbody.innerHTML = users.map((u, index) => `
-                <tr class="border-b border-slate-800/80">
-                    <td class="p-3.5">
-                        <input type="text" id="adm-user-phone-${index}" value="${u.phone}" class="bg-[#030712] border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-white outline-none focus:border-cyan-500 w-full font-bold">
-                    </td>
-                    <td class="p-3.5">
-                        <input type="text" id="adm-user-pass-${index}" value="${u.password}" class="bg-[#030712] border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-amber-400 outline-none focus:border-cyan-500 w-full font-mono">
-                    </td>
-                    <td class="p-3.5">
-                        <input type="number" id="adm-user-bal-${index}" value="${u.balance}" class="bg-[#030712] border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-emerald-400 outline-none focus:border-cyan-500 w-full font-bold font-mono">
-                    </td>
-                    <td class="p-3.5 font-bold text-cyan-300 uppercase text-[10px]">
-                        ${u.role || 'user'}
-                    </td>
-                    <td class="p-3.5 space-x-2 whitespace-nowrap">
-                        <button onclick="saveAdminEditedUser(${index})" class="px-3 py-1.5 bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded-lg text-xs shadow">Lưu</button>
-                        ${u.role !== 'admin' ? `<button onclick="deleteAdminUser('${u.phone}')" class="px-3 py-1.5 bg-red-600 hover:bg-red-500 text-white font-bold rounded-lg text-xs shadow">Xóa</button>` : ''}
-                    </td>
-                </tr>
-            `).join('');
-        }
-
-        function saveAdminEditedUser(index) {
-            let users = getUsers();
-            const newPhone = document.getElementById(`adm-user-phone-${index}`).value.trim();
-            const newPass = document.getElementById(`adm-user-pass-${index}`).value.trim();
-            const newBal = Number(document.getElementById(`adm-user-bal-${index}`).value);
-
-            if (!newPhone || !newPass || isNaN(newBal)) {
-                showToast('Thông tin chỉnh sửa không hợp lệ!', 'error');
-                return;
-            }
-
-            users[index].phone = newPhone;
-            users[index].password = newPass;
-            users[index].balance = newBal;
-            saveUsers(users);
-            showToast('Cập nhật tài khoản thành viên thành công!');
-            renderAdminDashboard();
-        }
-
-        function deleteAdminUser(phone) {
-            if (!confirm(`Bạn có chắc chắn muốn xóa vĩnh viễn tài khoản ${phone}?`)) return;
-            let users = getUsers();
-            users = users.filter(u => u.phone !== phone);
-            saveUsers(users);
-            showToast('Xóa tài khoản thành công!');
-            renderAdminDashboard();
-        }
-
-        // Quản lý kho acc
         function switchAccTab(tab) {
             ['single', 'bulk', 'delete-batch'].forEach(t => {
                 document.getElementById(`form-acc-${t}-box`).classList.add('hidden');
@@ -2174,28 +2214,27 @@
             e.preventDefault();
             const title = document.getElementById('acc-title').value.trim();
             const rank = document.getElementById('acc-rank').value.trim();
-            const price = Number(document.getElementById('acc-price').value);
-            const discount = Number(document.getElementById('acc-discount').value);
-            const username_game = document.getElementById('acc-user').value.trim();
-            const password_game = document.getElementById('acc-pass').value.trim();
+            const price = parseInt(document.getElementById('acc-price').value);
+            const discount = parseInt(document.getElementById('acc-discount').value) || 0;
+            const user = document.getElementById('acc-user').value.trim();
+            const pass = document.getElementById('acc-pass').value.trim();
 
-            if (!title || !rank || isNaN(price) || !username_game || !password_game) {
+            if (!title || !rank || isNaN(price) || !user || !pass) {
                 showToast('Vui lòng điền đầy đủ thông tin tài khoản!', 'error');
                 return;
             }
 
             let accounts = getAccounts();
-            accounts.unshift({
-                id: Date.now(),
-                title,
-                rank,
-                price,
-                discount,
-                images: uploadedImagesBase64.length > 0 ? [...uploadedImagesBase64] : ['https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=600&q=80'],
-                username_game,
-                password_game,
+            const newAcc = {
+                id: Math.floor(1000 + Math.random() * 9000),
+                title, rank, price, discount,
+                images: uploadedImagesBase64.length > 0 ? uploadedImagesBase64 : ['https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=600&q=80'],
+                username_game: user,
+                password_game: pass,
                 status: 'available'
-            });
+            };
+
+            accounts.unshift(newAcc);
             saveAccounts(accounts);
             showToast('Thêm tài khoản vào kho thành công!');
             document.getElementById('form-acc-single-box').reset();
@@ -2205,113 +2244,66 @@
         }
 
         function handleAutoGenerateBulkAccounts() {
-            const qty = Number(document.getElementById('bulk-quantity').value);
-            if (!qty || qty < 1) return;
-
-            const ranks = ['Sắt', 'Đồng', 'Bạc', 'Vàng', 'Bạch Kim', 'Lục Bảo', 'Kim Cương', 'Cao Thủ', 'Thách Đấu'];
+            const qty = parseInt(document.getElementById('bulk-quantity').value) || 10;
             let accounts = getAccounts();
+            const ranks = ['Sắt', 'Đồng', 'Bạc', 'Vàng', 'Bạch Kim', 'Lục Bảo', 'Kim Cương', 'Cao Thủ'];
+            const imgs = [
+                'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=600&q=80',
+                'https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=600&q=80',
+                'https://images.unsplash.com/photo-1538481199705-c710c4e965fc?auto=format&fit=crop&w=600&q=80'
+            ];
 
             for (let i = 0; i < qty; i++) {
                 const rank = ranks[Math.floor(Math.random() * ranks.length)];
-                const price = Math.floor(Math.random() * 15 + 1) * 50000;
                 accounts.unshift({
-                    id: Date.now() + i,
-                    title: `Acc ${rank} Full Tướng VIP #${Math.floor(Math.random()*9000 + 1000)}`,
-                    rank,
-                    price,
-                    discount: Math.random() > 0.5 ? 10 : 20,
-                    images: ['https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=600&q=80'],
-                    username_game: `riot_auto_${Math.floor(Math.random()*90000 + 10000)}`,
-                    password_game: `Pass@${Math.floor(Math.random()*9000 + 1000)}`,
+                    id: Math.floor(1000 + Math.random() * 9000),
+                    title: `Acc LMHT Rank ${rank} Full Tướng Skin Đẹp`,
+                    rank: rank,
+                    price: Math.floor(100 + Math.random() * 900) * 1000,
+                    discount: Math.floor(Math.random() * 3) * 10,
+                    images: [imgs[Math.floor(Math.random() * imgs.length)]],
+                    username_game: `riot_auto_${Math.floor(10000 + Math.random() * 90000)}`,
+                    password_game: `Pass@${Math.floor(100 + Math.random() * 900)}`,
                     status: 'available'
                 });
             }
+
             saveAccounts(accounts);
-            showToast(`Đã tự động tạo và đưa ${qty} acc lên kho thành công!`);
+            showToast(`Đã tự động tạo thành công ${qty} tài khoản vào kho!`);
             renderAdminDashboard();
         }
 
-        function handleDeleteAllAccounts() {
-            if (!confirm('Bạn có chắc chắn muốn XÓA SẠCH toàn bộ tài khoản trong kho không?')) return;
-            saveAccounts([]);
-            showToast('Đã xóa sạch toàn bộ kho tài khoản!');
-            renderAdminDashboard();
-        }
-
-        function renderAdminAccountsTable(accounts) {
-            const tbody = document.getElementById('admin-accounts-table');
-            if (!tbody) return;
-            const avail = accounts.filter(a => a.status === 'available');
-
-            if (avail.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-500">Kho tài khoản trống.</td></tr>`;
-                return;
-            }
-
-            tbody.innerHTML = avail.map((acc, index) => {
-                const img = (acc.images && acc.images.length > 0) ? acc.images[0] : '';
-                return `
-                    <tr class="border-b border-slate-800/80">
-                        <td class="p-3 font-mono text-cyan-400">${acc.id}</td>
-                        <td class="p-3 font-bold text-white max-w-xs truncate">${acc.title}</td>
-                        <td class="p-3"><input type="number" id="adm-acc-price-${acc.id}" value="${acc.price}" class="bg-[#030712] border border-slate-800 rounded-lg px-3 py-1 text-xs text-emerald-400 w-28 font-mono"></td>
-                        <td class="p-3"><input type="number" id="adm-acc-disc-${acc.id}" value="${acc.discount || 0}" class="bg-[#030712] border border-slate-800 rounded-lg px-3 py-1 text-xs text-cyan-300 w-16 font-mono"></td>
-                        <td class="p-3"><img src="${img}" class="w-10 h-10 object-cover rounded-lg border border-slate-800"></td>
-                        <td class="p-3 space-x-2 whitespace-nowrap">
-                            <button onclick="saveAdminEditedAcc(${acc.id})" class="px-3 py-1.5 bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded-lg text-xs shadow">Lưu</button>
-                            <button onclick="deleteAdminAcc(${acc.id})" class="px-3 py-1.5 bg-red-600 hover:bg-red-500 text-white font-bold rounded-lg text-xs shadow">Xóa</button>
-                        </td>
-                    </tr>
-                `;
-            }).join('');
-        }
-
-        function saveAdminEditedAcc(accId) {
+        function saveAdminEditAccount(id) {
             let accounts = getAccounts();
-            let acc = accounts.find(a => a.id === accId);
-            if (!acc) return;
-
-            const newPrice = Number(document.getElementById(`adm-acc-price-${accId}`).value);
-            const newDisc = Number(document.getElementById(`adm-acc-disc-${accId}`).value);
-
-            if (isNaN(newPrice) || isNaN(newDisc)) {
-                showToast('Giá hoặc % giảm giá không hợp lệ!', 'error');
-                return;
+            const idx = accounts.findIndex(a => a.id === id);
+            if (idx !== -1) {
+                const p = parseInt(document.getElementById(`edit-price-${id}`).value);
+                const d = parseInt(document.getElementById(`edit-discount-${id}`).value);
+                if (isNaN(p) || isNaN(d)) {
+                    showToast('Vui lòng nhập giá hoặc % giảm hợp lệ!', 'error');
+                    return;
+                }
+                accounts[idx].price = p;
+                accounts[idx].discount = d;
+                saveAccounts(accounts);
+                showToast('Cập nhật giá acc thành công!');
+                renderAdminDashboard();
             }
-
-            acc.price = newPrice;
-            acc.discount = newDisc;
-            saveAccounts(accounts);
-            showToast('Cập nhật thông tin acc thành công!');
-            renderAdminDashboard();
         }
 
-        function deleteAdminAcc(accId) {
-            if (!confirm('Bạn có muốn xóa tài khoản này khỏi kho không?')) return;
-            let accounts = getAccounts();
-            accounts = accounts.filter(a => a.id !== accId);
+        function deleteSingleAccount(id) {
+            let accounts = getAccounts().filter(a => a.id !== id);
             saveAccounts(accounts);
             showToast('Đã xóa tài khoản khỏi kho!');
             renderAdminDashboard();
         }
 
-        function toggleServerStatus() {
-            let serverCfg = getServerConfig();
-            const reason = document.getElementById('server-close-reason').value.trim();
-            serverCfg.isOnline = !serverCfg.isOnline;
-            serverCfg.reason = reason;
-            saveServerConfig(serverCfg);
-            showToast(`Trạng thái Server đã được thay đổi thành: ${serverCfg.isOnline ? 'Online' : 'Bảo trì'}`);
-            renderAdminDashboard();
-        }
-
-        function resetFullSystemData() {
-            if (!confirm('CẢNH BÁO: Thao tác này sẽ xóa sạch toàn bộ dữ liệu giao dịch, tài khoản user và kho acc! Bạn có chắc chắn muốn reset toàn bộ trang không?')) return;
-            localStorage.clear();
-            initDatabase();
-            currentUser = null;
-            showToast('Đã reset toàn bộ hệ thống về ban đầu!');
-            location.reload();
+        function handleDeleteAllAccounts() {
+            if (confirm('Bạn có chắc chắn muốn xóa toàn bộ tài khoản trong kho không?')) {
+                saveAccounts([]);
+                showToast('Đã xóa sạch kho tài khoản!');
+                renderAdminDashboard();
+            }
         }
 
         function openVietQRConfigModal() {
@@ -2332,26 +2324,42 @@
             const accName = document.getElementById('custom-acc-name').value.trim();
 
             if (!accNo || !accName) {
-                showToast('Vui lòng nhập đầy đủ thông tin tài khoản ngân hàng VietQR!', 'error');
+                showToast('Vui lòng nhập đầy đủ số tài khoản và tên chủ tài khoản!', 'error');
                 return;
             }
 
             saveVietQRConfig({ bankId, accNo, accName });
-            showToast('Đã cập nhật cấu hình mã VietQR hệ thống thành công!');
+            showToast('Cập nhật mã VietQR hệ thống thành công!');
             closeVietQRConfigModal();
         }
 
-        // Xuất báo cáo (TXT, PDF, Excel)
+        function openLightbox(imgSrc) {
+            document.getElementById('lightbox-img').src = imgSrc;
+            document.getElementById('lightbox-modal').classList.remove('hidden');
+        }
+
+        function closeLightbox() {
+            document.getElementById('lightbox-modal').classList.add('hidden');
+        }
+
+        function exportToExcel() {
+            const accounts = getAccounts();
+            const ws = XLSX.utils.json_to_sheet(accounts);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Accounts");
+            XLSX.writeFile(wb, "PVH_Store_Accounts.xlsx");
+            showToast('Xuất file Excel thành công!');
+        }
+
         function exportReportTxt() {
             const orders = getOrders();
-            const text = orders.map(o => `[${o.time}] Don hang: ${o.id} - User: ${o.buyer} - Acc: ${o.title} - Gia: ${o.price} VND`).join('\n');
-            const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'PVH_Store_Bao_Cao.txt';
-            a.click();
-            showToast('Xuất báo cáo .TXT thành công!');
+            const content = orders.map(o => `Mã ĐH: #${o.orderId} | User: ${o.buyer} | Acc: ${o.title} | Giá: ${o.price}đ | Thời gian: ${o.time}`).join('\n');
+            const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'PVH_Store_Report.txt';
+            link.click();
+            showToast('Xuất báo cáo TXT thành công!');
         }
 
         function exportReportPdf() {
@@ -2361,29 +2369,12 @@
             const orders = getOrders();
             let y = 30;
             orders.forEach((o, i) => {
-                doc.text(`${i+1}. ${o.time} - ${o.buyer} - ${o.title} - ${o.price} VND`, 14, y);
+                doc.text(`${i+1}. Ma: #${o.orderId} - Gia: ${o.price}d - User: ${o.buyer}`, 14, y);
                 y += 10;
                 if (y > 280) { doc.addPage(); y = 20; }
             });
-            doc.save('PVH_Store_Bao_Cao.pdf');
-            showToast('Xuất báo cáo .PDF thành công!');
-        }
-
-        function exportToExcel() {
-            const orders = getOrders();
-            const data = orders.map(o => ({
-                'Mã đơn': o.id,
-                'Người mua': o.buyer,
-                'Sản phẩm': o.title,
-                'Giá tiền (VNĐ)': o.price,
-                'Tài khoản game': o.username_game,
-                'Thời gian': o.time
-            }));
-            const ws = XLSX.utils.json_to_sheet(data);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "GiaoDich");
-            XLSX.writeFile(wb, "PVH_Store_Bao_Cao.xlsx");
-            showToast('Xuất file Excel .XLSX thành công!');
+            doc.save("PVH_Store_Report.pdf");
+            showToast('Xuất báo cáo PDF thành công!');
         }
     </script>
 </body>
