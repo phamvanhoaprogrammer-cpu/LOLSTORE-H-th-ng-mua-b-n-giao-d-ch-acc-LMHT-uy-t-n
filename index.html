@@ -1252,106 +1252,217 @@
 
         // Dữ liệu mặc định ban đầu
         const DEFAULT_ACCOUNTS = [
-            { id: 'ACC-8801', title: 'Acc Cao Thủ 350 LP Full Tướng 120 Trang Phục Độc Quyền', rank: 'Cao Thủ', price: 1500000, discountPercent: 10, images: ['https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800&auto=format&fit=crop'], user: 'riot_pro8801', pass: 'pvhstore2026_pass1', status: 'available' },
-            { id: 'ACC-8802', title: 'Acc Kim Cương I Thông Thạo Cao Rất Nhiều Skin Hiếm', rank: 'Kim Cương', price: 800000, discountPercent: 15, images: ['https://images.unsplash.com/photo-1538481199705-c710c4e965fc?w=800&auto=format&fit=crop'], user: 'riot_pro8802', pass: 'pvhstore2026_pass2', status: 'available' },
-            { id: 'ACC-8803', title: 'Acc Bạch Kim II Trắng Thông Tin Đầy Đủ Tướng Leo Rank', rank: 'Bạch Kim', price: 350000, discountPercent: 0, images: ['https://images.unsplash.com/photo-1511512578047-dfb367046420?w=800&auto=format&fit=crop'], user: 'riot_pro8803', pass: 'pvhstore2026_pass3', status: 'available' }
+            { id: 'ACC-8801', title: 'Acc Cao Thủ 350 LP Full Tướng 120 Trang Phục Độc Quyền', rank: 'Cao Thủ', price: 1500000, discount: 10, user: 'pvh_pro_01', pass: 'pvh123456', images: ['https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=600&q=80'], status: 'available' },
+            { id: 'ACC-8802', title: 'Acc Kim Cương I 80 Skins Siêu Mượt Rank Đẹp', rank: 'Kim Cương', price: 850000, discount: 15, user: 'pvh_pro_02', pass: 'pvh123456', images: ['https://images.unsplash.com/photo-1538481199705-c710c4e965fc?auto=format&fit=crop&w=600&q=80'], status: 'available' },
+            { id: 'ACC-8803', title: 'Acc Lục Bảo II Nhiều Tướng Hot Meta 2026', rank: 'Lục Bảo', price: 450000, discount: 0, user: 'pvh_pro_03', pass: 'pvh123456', images: ['https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=600&q=80'], status: 'available' }
         ];
 
-        let state = {
+        // State chính của App
+        let appData = {
+            users: JSON.parse(localStorage.getItem('pvh_users')) || [
+                { username: 'admin', phone: '0869719516', password: '123', balance: 10000000, role: 'admin', cccd: '001200000001' },
+                { username: 'user01', phone: '0987654321', password: '123', balance: 500000, role: 'user', cccd: '001200000002' }
+            ],
             currentUser: JSON.parse(localStorage.getItem('pvh_current_user')) || null,
-            users: JSON.parse(localStorage.getItem('pvh_users')) || [],
             accounts: JSON.parse(localStorage.getItem('pvh_accounts')) || DEFAULT_ACCOUNTS,
             deposits: JSON.parse(localStorage.getItem('pvh_deposits')) || [],
             withdraws: JSON.parse(localStorage.getItem('pvh_withdraws')) || [],
             purchases: JSON.parse(localStorage.getItem('pvh_purchases')) || [],
             coupons: JSON.parse(localStorage.getItem('pvh_coupons')) || [
-                { code: 'FREE100', percent: 100, quantity: 100, used: 0, expired: false },
-                { code: 'SALE50', percent: 50, quantity: 50, used: 0, expired: false }
+                { code: 'FREE100', percent: 100, quantity: 10, status: 'active' },
+                { code: 'SALE50', percent: 50, quantity: 50, status: 'active' }
             ],
-            verifiedList: JSON.parse(localStorage.getItem('pvh_verified_list')) || [],
-            cart: JSON.parse(localStorage.getItem('pvh_cart')) || [],
+            verifiedList: JSON.parse(localStorage.getItem('pvh_verified')) || [
+                { phone: '0869719516', cccd: '001200000001' }
+            ],
             config: JSON.parse(localStorage.getItem('pvh_config')) || {
-                bankId: 'techcombank',
-                accNo: '99999999983868',
-                accName: 'PHAM VAN HOA',
-                bonusPercent: 10,
-                adminCccd: '038202001234',
+                qrBank: 'techcombank',
+                qrAccNo: '99999999983868',
+                qrAccName: 'PHAM VAN HOA',
                 qrMinutes: 15,
                 qrSeconds: 59,
+                depositBonusPercent: 5,
                 withdrawFeeType: 'fixed',
                 withdrawFeeVal: 5000,
+                adminCccd: '001200000001',
                 serverOnline: true,
                 serverReason: 'Hệ thống đang bảo trì định kỳ'
-            }
+            },
+            cart: JSON.parse(localStorage.getItem('pvh_cart')) || [],
+            uploadedImages: []
         };
 
-        let tempImages = [];
-        let qrTimerInterval = null;
-        let appliedCheckoutCoupon = null;
-        let appliedCartCoupon = null;
-
-        function saveState() {
-            localStorage.setItem('pvh_current_user', JSON.stringify(state.currentUser));
-            localStorage.setItem('pvh_users', JSON.stringify(state.users));
-            localStorage.setItem('pvh_accounts', JSON.stringify(state.accounts));
-            localStorage.setItem('pvh_deposits', JSON.stringify(state.deposits));
-            localStorage.setItem('pvh_withdraws', JSON.stringify(state.withdraws));
-            localStorage.setItem('pvh_purchases', JSON.stringify(state.purchases));
-            localStorage.setItem('pvh_coupons', JSON.stringify(state.coupons));
-            localStorage.setItem('pvh_verified_list', JSON.stringify(state.verifiedList));
-            localStorage.setItem('pvh_cart', JSON.stringify(state.cart));
-            localStorage.setItem('pvh_config', JSON.stringify(state.config));
+        // Lưu vào LocalStorage
+        function saveData() {
+            localStorage.setItem('pvh_users', JSON.stringify(appData.users));
+            localStorage.setItem('pvh_current_user', JSON.stringify(appData.currentUser));
+            localStorage.setItem('pvh_accounts', JSON.stringify(appData.accounts));
+            localStorage.setItem('pvh_deposits', JSON.stringify(appData.deposits));
+            localStorage.setItem('pvh_withdraws', JSON.stringify(appData.withdraws));
+            localStorage.setItem('pvh_purchases', JSON.stringify(appData.purchases));
+            localStorage.setItem('pvh_coupons', JSON.stringify(appData.coupons));
+            localStorage.setItem('pvh_verified', JSON.stringify(appData.verifiedList));
+            localStorage.setItem('pvh_config', JSON.stringify(appData.config));
+            localStorage.setItem('pvh_cart', JSON.stringify(appData.cart));
         }
 
-        function showToast(message, type = 'info') {
+        // Thông báo Toast
+        function showToast(message, type = 'success') {
             const container = document.getElementById('toast-container');
-            if (!container) return;
             const toast = document.createElement('div');
-            let bgClass = 'bg-slate-900 border-brand-500 text-white';
-            let icon = 'fa-circle-info text-brand-400';
-            if (type === 'success') { bgClass = 'bg-slate-900 border-emerald-500 text-white'; icon = 'fa-circle-check text-emerald-400'; }
-            if (type === 'error') { bgClass = 'bg-slate-900 border-red-500 text-white'; icon = 'fa-triangle-exclamation text-red-400'; }
-            if (type === 'warning') { bgClass = 'bg-slate-900 border-amber-500 text-white'; icon = 'fa-bell text-amber-400'; }
+            const colorClass = type === 'success' ? 'border-emerald-500 bg-emerald-950/90 text-emerald-200' : 
+                              type === 'error' ? 'border-red-500 bg-red-950/90 text-red-200' : 'border-amber-500 bg-amber-950/90 text-amber-200';
+            const icon = type === 'success' ? 'fa-circle-check text-emerald-400' : 
+                         type === 'error' ? 'fa-circle-xmark text-red-400' : 'fa-triangle-exclamation text-amber-400';
 
-            toast.className = `p-4 border-l-4 shadow-2xl flex items-center space-x-3 pointer-events-auto toast-animate-in border ${bgClass}`;
-            toast.innerHTML = `<i class="fa-solid ${icon} text-base"></i><span class="text-xs font-bold">${message}</span>`;
+            toast.className = `toast-animate-in border-l-4 p-4 shadow-2xl flex items-center space-x-3 text-xs font-bold pointer-events-auto border ${colorClass}`;
+            toast.innerHTML = `<i class="fa-solid ${icon} text-base"></i><span>${message}</span>`;
             container.appendChild(toast);
 
             setTimeout(() => {
                 toast.classList.remove('toast-animate-in');
                 toast.classList.add('toast-animate-out');
                 setTimeout(() => toast.remove(), 300);
-            }, 3500);
+            }, 3000);
         }
 
-        function formatCurrency(val) {
-            return new Intl.NumberFormat('vi-VN').format(val || 0) + ' đ';
+        // Định dạng tiền VNĐ
+        function formatVND(amount) {
+            return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount).replace('₫', 'đ');
         }
 
         function removeAccentsAndUppercase(str) {
-            if (!str) return '';
             return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D').toUpperCase();
         }
 
-        function limitCCCDLength(input, maxLen) {
-            input.value = input.value.replace(/\D/g, '').slice(0, maxLen);
-        }
+        // TẢI VÀ ĐỒNG BỘ GIAO DIỆN HỆ THỐNG
+        window.addEventListener('DOMContentLoaded', () => {
+            populateBankSelects();
+            renderHeaderUI();
+            renderAccountsGrid();
+            renderAdminDashboard();
+            updateCartBadge();
+            
+            // Xử lý riêng giao diện Banner Hero theo trạng thái Đăng nhập
+            updateBannerVisibility();
+        });
 
-        function limitPhoneLength(input, maxLen) {
-            input.value = input.value.replace(/\D/g, '').slice(0, maxLen);
-        }
-
-        function formatCurrencyInput(input) {
-            let num = input.value.replace(/\D/g, '');
-            if (num) {
-                input.value = new Intl.NumberFormat('vi-VN').format(num);
-            } else {
-                input.value = '';
+        // Hàm cập nhật trạng thái hiển thị của Banner Hero
+        function updateBannerVisibility() {
+            const heroBanner = document.getElementById('hero-banner-box');
+            if (heroBanner) {
+                if (appData.currentUser) {
+                    heroBanner.classList.add('hidden'); // Tự động ẩn banner khi đã đăng nhập
+                } else {
+                    heroBanner.classList.remove('hidden'); // Hiện lại banner khi chưa đăng nhập / đăng xuất
+                }
             }
         }
 
-        function getUnformattedCurrencyValue(input) {
-            return parseInt((input.value || '').replace(/\D/g, '')) || 0;
+        function populateBankSelects() {
+            const selects = ['withdraw-bank', 'admin-qr-bank-select', 'custom-bank-id'];
+            selects.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.innerHTML = VIETNAM_BANKS.map(b => `<option value="${b.id}">${b.name}</option>`).join('');
+                }
+            });
+        }
+
+        function renderHeaderUI() {
+            const desktopNav = document.getElementById('nav-auth-desktop');
+            const mobileWallet = document.getElementById('nav-wallet-mobile');
+            const offcanvasInfo = document.getElementById('offcanvas-user-info');
+            const offcanvasLinks = document.getElementById('offcanvas-links');
+
+            // Cập nhật trạng thái hiển thị Banner mỗi khi load lại Header
+            updateBannerVisibility();
+
+            if (appData.currentUser) {
+                const user = appData.currentUser;
+                const isAdmin = user.role === 'admin';
+
+                desktopNav.innerHTML = `
+                    <div class="flex items-center space-x-3 bg-slate-900 border border-slate-800 px-3 py-1.5">
+                        <i class="fa-solid fa-wallet text-amber-400"></i>
+                        <span class="text-xs font-mono font-black text-amber-400">${formatVND(user.balance)}</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button onclick="showPage('history')" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-200 px-3 py-2 text-xs font-bold transition flex items-center">
+                            <i class="fa-solid fa-box-open mr-1.5 text-brand-400"></i> Tủ Đồ
+                        </button>
+                        ${isAdmin ? `
+                            <button onclick="showPage('admin')" class="bg-brand-500/10 hover:bg-brand-500/20 border border-brand-500/40 text-brand-400 px-3 py-2 text-xs font-bold transition flex items-center">
+                                <i class="fa-solid fa-user-gear mr-1.5"></i> Admin
+                            </button>
+                        ` : ''}
+                        <button onclick="handleLogout()" class="bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 px-3 py-2 text-xs font-bold transition">
+                            <i class="fa-solid fa-right-from-bracket"></i>
+                        </button>
+                    </div>
+                `;
+
+                mobileWallet.innerHTML = `
+                    <div class="bg-slate-900 border border-slate-800 px-2.5 py-1 flex items-center space-x-1.5">
+                        <i class="fa-solid fa-wallet text-amber-400 text-xs"></i>
+                        <span class="text-[11px] font-mono font-bold text-amber-400">${formatVND(user.balance)}</span>
+                    </div>
+                `;
+
+                offcanvasInfo.innerHTML = `
+                    <div class="font-extrabold text-white flex items-center justify-between">
+                        <span><i class="fa-solid fa-user-circle mr-1.5 text-brand-400"></i> ${user.username}</span>
+                        <span class="px-2 py-0.5 text-[9px] uppercase tracking-wider font-extrabold ${isAdmin ? 'bg-brand-500/20 text-brand-400 border border-brand-500/30' : 'bg-slate-800 text-slate-300'}">${user.role}</span>
+                    </div>
+                    <div class="text-slate-400">Ví: <span class="text-amber-400 font-mono font-extrabold">${formatVND(user.balance)}</span></div>
+                `;
+
+                offcanvasLinks.innerHTML = `
+                    <button onclick="showPage('home'); toggleOffCanvasMenu();" class="w-full text-left px-3 py-2.5 bg-slate-900 border border-slate-800 text-slate-200 text-xs font-bold hover:border-brand-500 transition flex items-center"><i class="fa-solid fa-house mr-2.5 text-brand-400"></i> Trang Chủ Mua Acc</button>
+                    <button onclick="showPage('deposit'); toggleOffCanvasMenu();" class="w-full text-left px-3 py-2.5 bg-slate-900 border border-slate-800 text-slate-200 text-xs font-bold hover:border-brand-500 transition flex items-center"><i class="fa-solid fa-qrcode mr-2.5 text-brand-400"></i> Nạp Tiền VietQR Auto</button>
+                    <button onclick="showPage('withdraw'); toggleOffCanvasMenu();" class="w-full text-left px-3 py-2.5 bg-slate-900 border border-slate-800 text-slate-200 text-xs font-bold hover:border-brand-500 transition flex items-center"><i class="fa-solid fa-money-bill-transfer mr-2.5 text-brand-400"></i> Rút Tiền Ví Siêu Tốc</button>
+                    <button onclick="showPage('user-history'); toggleOffCanvasMenu();" class="w-full text-left px-3 py-2.5 bg-slate-900 border border-slate-800 text-slate-200 text-xs font-bold hover:border-brand-500 transition flex items-center"><i class="fa-solid fa-clock-rotate-left mr-2.5 text-brand-400"></i> Lịch Sử Nạp / Rút</button>
+                    <button onclick="showPage('history'); toggleOffCanvasMenu();" class="w-full text-left px-3 py-2.5 bg-slate-900 border border-slate-800 text-slate-200 text-xs font-bold hover:border-brand-500 transition flex items-center"><i class="fa-solid fa-box-open mr-2.5 text-brand-400"></i> Tủ Đồ Tài Khoản Mua</button>
+                    ${isAdmin ? `<button onclick="showPage('admin'); toggleOffCanvasMenu();" class="w-full text-left px-3 py-2.5 bg-brand-500/10 border border-brand-500/30 text-brand-400 text-xs font-bold hover:bg-brand-500/20 transition flex items-center"><i class="fa-solid fa-user-gear mr-2.5"></i> Cổng Admin Quản Trị</button>` : ''}
+                    <button onclick="handleLogout(); toggleOffCanvasMenu();" class="w-full text-left px-3 py-2.5 bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-bold hover:bg-red-500/20 transition flex items-center"><i class="fa-solid fa-right-from-bracket mr-2.5"></i> Đăng Xuất Tài Khoản</button>
+                `;
+
+            } else {
+                desktopNav.innerHTML = `
+                    <button onclick="showPage('auth')" class="bg-brand-500 hover:bg-brand-600 text-white px-4 py-2 text-xs font-extrabold uppercase tracking-wider transition shadow-lg shadow-brand-500/20">
+                        <i class="fa-solid fa-right-to-bracket mr-1.5"></i> Đăng Nhập
+                    </button>
+                    <button onclick="showPage('login-admin')" class="bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 px-3.5 py-2 text-xs font-bold transition">
+                        <i class="fa-solid fa-user-shield text-brand-400"></i>
+                    </button>
+                `;
+
+                mobileWallet.innerHTML = '';
+                offcanvasInfo.innerHTML = `<span class="text-slate-400 italic font-medium">Bạn chưa đăng nhập hệ thống.</span>`;
+                offcanvasLinks.innerHTML = `
+                    <button onclick="showPage('auth'); toggleOffCanvasMenu();" class="w-full text-left px-3 py-2.5 bg-brand-500 text-white text-xs font-extrabold uppercase tracking-wider transition flex items-center justify-center"><i class="fa-solid fa-right-to-bracket mr-2"></i> Đăng Nhập / Đăng Ký</button>
+                    <button onclick="showPage('login-admin'); toggleOffCanvasMenu();" class="w-full text-left px-3 py-2.5 bg-slate-900 border border-slate-800 text-slate-300 text-xs font-bold hover:border-brand-500 transition flex items-center"><i class="fa-solid fa-user-shield mr-2 text-brand-400"></i> Đăng Nhập Quản Trị Admin</button>
+                `;
+            }
+        }
+
+        // Chuyển đổi giữa các trang
+        function showPage(pageId) {
+            const pages = ['home', 'login-admin', 'auth', 'deposit', 'withdraw', 'user-history', 'admin', 'history'];
+            pages.forEach(id => {
+                const el = document.getElementById(`page-${id}`);
+                if (el) el.classList.add('hidden');
+            });
+
+            const targetPage = document.getElementById(`page-${pageId}`);
+            if (targetPage) targetPage.classList.remove('hidden');
+
+            if (pageId === 'withdraw') renderWithdrawHistory();
+            if (pageId === 'user-history') renderUserHistoryTabs();
+            if (pageId === 'admin') renderAdminDashboard();
+            if (pageId === 'history') renderHistory();
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         function reloadSite() {
@@ -1365,182 +1476,57 @@
             backdrop.classList.toggle('hidden');
         }
 
-        function updateNavHeader() {
-            const desktopNav = document.getElementById('nav-auth-desktop');
-            const mobileWallet = document.getElementById('nav-wallet-mobile');
-            const offcanvasUser = document.getElementById('offcanvas-user-info');
-            const offcanvasLinks = document.getElementById('offcanvas-links');
-
-            const cartCount = state.cart.length;
-            const badge = document.getElementById('cart-badge-count');
-            if (badge) badge.innerText = cartCount;
-
-            if (state.currentUser) {
-                const isSystemAdmin = state.currentUser.role === 'admin';
-                desktopNav.innerHTML = `
-                    <div class="flex items-center space-x-3">
-                        <div class="text-right">
-                            <span class="text-xs font-black text-white block">${state.currentUser.username} ${isSystemAdmin ? '<span class="text-[10px] bg-red-500/20 text-red-400 px-1.5 py-0.5 border border-red-500/30 uppercase">Admin</span>' : ''}</span>
-                            <span class="text-xs font-extrabold text-amber-400 font-mono">${formatCurrency(state.currentUser.balance)}</span>
-                        </div>
-                        <button onclick="showPage('deposit')" class="bg-brand-500/10 hover:bg-brand-500/20 border border-brand-500/40 text-brand-400 font-extrabold text-xs px-3 py-2 transition"><i class="fa-solid fa-plus mr-1"></i> Nạp</button>
-                        <button onclick="showPage('withdraw')" class="bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 font-extrabold text-xs px-3 py-2 transition"><i class="fa-solid fa-arrow-up-right-from-square mr-1"></i> Rút</button>
-                        <button onclick="handleLogout()" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 text-red-400 p-2 text-xs transition" title="Đăng xuất"><i class="fa-solid fa-power-off"></i></button>
-                    </div>
-                `;
-
-                mobileWallet.innerHTML = `
-                    <span class="text-xs font-black text-amber-400 font-mono bg-slate-950 px-2.5 py-1.5 border border-slate-800">${formatCurrency(state.currentUser.balance)}</span>
-                `;
-
-                offcanvasUser.innerHTML = `
-                    <div class="font-extrabold text-white uppercase flex justify-between items-center">
-                        <span>${state.currentUser.username}</span>
-                        ${isSystemAdmin ? '<span class="text-[9px] bg-red-500/20 text-red-400 px-1 border border-red-500/30">ADMIN</span>' : ''}
-                    </div>
-                    <div class="text-amber-400 font-bold font-mono">Ví: ${formatCurrency(state.currentUser.balance)}</div>
-                `;
-
-                let links = `
-                    <button onclick="showPage('home'); toggleOffCanvasMenu();" class="w-full text-left py-2.5 px-3 bg-slate-900 border border-slate-800 text-slate-200 text-xs font-bold hover:border-brand-500 transition"><i class="fa-solid fa-house mr-2 text-brand-400"></i> Trang Chủ</button>
-                    <button onclick="showPage('deposit'); toggleOffCanvasMenu();" class="w-full text-left py-2.5 px-3 bg-slate-900 border border-slate-800 text-slate-200 text-xs font-bold hover:border-brand-500 transition"><i class="fa-solid fa-qrcode mr-2 text-brand-400"></i> Nạp Tiền VietQR</button>
-                    <button onclick="showPage('withdraw'); toggleOffCanvasMenu();" class="w-full text-left py-2.5 px-3 bg-slate-900 border border-slate-800 text-slate-200 text-xs font-bold hover:border-brand-500 transition"><i class="fa-solid fa-money-bill-transfer mr-2 text-brand-400"></i> Rút Tiền Ví</button>
-                    <button onclick="showPage('user-history'); toggleOffCanvasMenu();" class="w-full text-left py-2.5 px-3 bg-slate-900 border border-slate-800 text-slate-200 text-xs font-bold hover:border-brand-500 transition"><i class="fa-solid fa-clock-rotate-left mr-2 text-brand-400"></i> Lịch Sử Nạp / Rút</button>
-                    <button onclick="showPage('history'); toggleOffCanvasMenu();" class="w-full text-left py-2.5 px-3 bg-slate-900 border border-slate-800 text-slate-200 text-xs font-bold hover:border-brand-500 transition"><i class="fa-solid fa-box-open mr-2 text-brand-400"></i> Tủ Đồ & Acc Đã Mua</button>
-                `;
-
-                if (isSystemAdmin) {
-                    links += `<button onclick="showPage('admin'); toggleOffCanvasMenu();" class="w-full text-left py-2.5 px-3 bg-brand-500/20 border border-brand-500/50 text-brand-400 text-xs font-black uppercase hover:bg-brand-500 hover:text-white transition mt-2"><i class="fa-solid fa-user-gear mr-2"></i> Dashboard Admin</button>`;
-                }
-
-                links += `<button onclick="handleLogout()" class="w-full text-left py-2.5 px-3 bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-bold hover:bg-red-500 hover:text-white transition mt-2"><i class="fa-solid fa-right-from-bracket mr-2"></i> Đăng Xuất</button>`;
-                offcanvasLinks.innerHTML = links;
-            } else {
-                desktopNav.innerHTML = `
-                    <button onclick="showPage('auth')" class="bg-brand-500 hover:bg-brand-600 text-white font-extrabold text-xs px-4 py-2 uppercase tracking-wider transition"><i class="fa-solid fa-right-to-bracket mr-1.5"></i> Đăng Nhập</button>
-                    <button onclick="showPage('login-admin')" class="bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 font-extrabold text-xs px-4 py-2 uppercase tracking-wider transition"><i class="fa-solid fa-user-shield mr-1.5 text-brand-400"></i> Admin</button>
-                `;
-
-                mobileWallet.innerHTML = '';
-
-                offcanvasUser.innerHTML = `
-                    <div class="font-extrabold text-slate-400 uppercase">Khách hàng ghé thăm</div>
-                    <div class="text-[11px] text-slate-500">Vui lòng đăng nhập để thực hiện giao dịch</div>
-                `;
-
-                offcanvasLinks.innerHTML = `
-                    <button onclick="showPage('home'); toggleOffCanvasMenu();" class="w-full text-left py-2.5 px-3 bg-slate-900 border border-slate-800 text-slate-200 text-xs font-bold hover:border-brand-500 transition"><i class="fa-solid fa-house mr-2 text-brand-400"></i> Trang Chủ</button>
-                    <button onclick="showPage('auth'); toggleOffCanvasMenu();" class="w-full text-left py-2.5 px-3 bg-brand-500 text-white text-xs font-extrabold uppercase hover:bg-brand-600 transition"><i class="fa-solid fa-right-to-bracket mr-2"></i> Đăng Nhập / Đăng Ký</button>
-                    <button onclick="showPage('login-admin'); toggleOffCanvasMenu();" class="w-full text-left py-2.5 px-3 bg-slate-900 border border-slate-800 text-slate-300 text-xs font-bold hover:border-brand-500 transition"><i class="fa-solid fa-user-shield mr-2 text-brand-400"></i> Đăng Nhập Admin</button>
-                `;
-            }
-        }
-
-        function showPage(pageId) {
-            if (!state.config.serverOnline && state.currentUser?.role !== 'admin' && pageId !== 'login-admin') {
-                showToast(`Hệ thống bảo trì: ${state.config.serverReason}`, 'warning');
-            }
-
-            const pages = ['home', 'login-admin', 'auth', 'deposit', 'withdraw', 'user-history', 'admin', 'history'];
-            pages.forEach(p => {
-                const el = document.getElementById(`page-${p}`);
-                if (el) el.classList.add('hidden');
-            });
-
-            const target = document.getElementById(`page-${pageId}`);
-            if (target) target.classList.remove('hidden');
-
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-
-            if (pageId === 'home') renderAccountsGrid();
-            if (pageId === 'admin') renderAdminDashboard();
-            if (pageId === 'withdraw') renderWithdrawPage();
-            if (pageId === 'user-history') renderUserHistoryPage();
-            if (pageId === 'history') renderHistory();
-            if (pageId === 'deposit') renderDepositPageConfig();
-
-            updateNavHeader();
-        }
-
-        function handleLogout() {
-            state.currentUser = null;
-            saveState();
-            showToast('Đã đăng xuất tài khoản!', 'info');
-            showPage('home');
-        }
-
-        // ---------- TRANG CHỦ & GIỎ HÀNG ----------
-        function renderAccountsGrid() {
+        // HIỂN THỊ KHO TÀI KHOẢN TRANG CHỦ
+        function renderAccountsGrid(accountsToRender = null) {
             const container = document.getElementById('account-grid');
-            if (!container) return;
-
-            const keyword = (document.getElementById('search-keyword')?.value || '').toLowerCase();
-            const rank = document.getElementById('search-rank')?.value || '';
-            const priceRange = document.getElementById('search-price-range')?.value || '';
-            const sortPrice = document.getElementById('search-sort-price')?.value || '';
-
-            let list = state.accounts.filter(a => a.status === 'available');
-
-            if (keyword) {
-                list = list.filter(a => a.title.toLowerCase().includes(keyword) || a.id.toLowerCase().includes(keyword));
-            }
-            if (rank) {
-                list = list.filter(a => a.rank === rank);
-            }
-            if (priceRange) {
-                const [min, max] = priceRange.split('-').map(Number);
-                list = list.filter(a => {
-                    const finalPrice = a.price * (1 - (a.discountPercent || 0) / 100);
-                    return finalPrice >= min && finalPrice <= max;
-                });
-            }
-
-            if (sortPrice === 'asc') {
-                list.sort((a, b) => (a.price * (1 - (a.discountPercent || 0) / 100)) - (b.price * (1 - (b.discountPercent || 0) / 100)));
-            } else if (sortPrice === 'desc') {
-                list.sort((a, b) => (b.price * (1 - (b.discountPercent || 0) / 100)) - (a.price * (1 - (a.discountPercent || 0) / 100)));
-            }
+            const list = accountsToRender || appData.accounts.filter(a => a.status === 'available');
 
             if (list.length === 0) {
                 container.innerHTML = `
-                    <div class="col-span-full enterprise-card p-12 text-center text-slate-400 space-y-3">
-                        <i class="fa-solid fa-box-open text-4xl text-slate-600"></i>
-                        <p class="text-xs font-bold uppercase">Không tìm thấy tài khoản phù hợp trong kho!</p>
+                    <div class="col-span-full enterprise-card p-12 text-center text-slate-500">
+                        <i class="fa-solid fa-box-open text-4xl mb-3 text-slate-600"></i>
+                        <p class="text-xs font-extrabold uppercase tracking-wider">Không tìm thấy tài khoản phù hợp trong kho!</p>
                     </div>
                 `;
                 return;
             }
 
             container.innerHTML = list.map(acc => {
-                const finalPrice = acc.price * (1 - (acc.discountPercent || 0) / 100);
-                const img = (acc.images && acc.images.length > 0) ? acc.images[0] : 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800&auto=format&fit=crop';
-                const inCart = state.cart.some(c => c.id === acc.id);
+                const salePrice = acc.price * (1 - (acc.discount || 0) / 100);
+                const isCartAdded = appData.cart.some(item => item.id === acc.id);
+                const defaultImg = acc.images && acc.images.length > 0 ? acc.images[0] : 'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=600&q=80';
 
                 return `
-                    <div class="enterprise-card group flex flex-col justify-between overflow-hidden">
+                    <div class="enterprise-card flex flex-col justify-between overflow-hidden group">
                         <div>
-                            <div class="relative overflow-hidden aspect-video bg-slate-950 border-b border-slate-800">
-                                <img src="${img}" alt="${acc.title}" onclick="openLightbox('${img}')" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 cursor-pointer">
-                                <span class="absolute top-2 left-2 bg-slate-950/90 border border-slate-700 text-brand-400 font-mono font-extrabold text-[10px] px-2 py-0.5 uppercase">${acc.id}</span>
-                                <span class="absolute top-2 right-2 bg-brand-500 text-white font-extrabold text-[10px] px-2 py-0.5 uppercase tracking-wider">${acc.rank}</span>
-                                ${acc.discountPercent > 0 ? `<span class="absolute bottom-2 left-2 bg-emerald-500 text-white font-black text-[10px] px-2 py-0.5 font-mono">-${acc.discountPercent}%</span>` : ''}
+                            <div class="relative h-48 bg-slate-950 overflow-hidden cursor-pointer" onclick="openLightbox('${defaultImg}')">
+                                <img src="${defaultImg}" alt="${acc.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                                <span class="absolute top-3 left-3 px-2.5 py-1 bg-slate-950/80 backdrop-blur-md border border-slate-700 text-white text-[10px] font-black uppercase tracking-wider">
+                                    <i class="fa-solid fa-trophy text-amber-400 mr-1"></i> ${acc.rank}
+                                </span>
+                                ${acc.discount > 0 ? `
+                                    <span class="absolute top-3 right-3 px-2 py-0.5 bg-red-500 text-white text-[10px] font-black font-mono">
+                                        -${acc.discount}%
+                                    </span>
+                                ` : ''}
                             </div>
                             <div class="p-5 space-y-3">
-                                <h4 class="font-extrabold text-xs text-white line-clamp-2 leading-relaxed group-hover:text-brand-400 transition">${acc.title}</h4>
-                                <div class="flex justify-between items-baseline pt-2 border-t border-slate-800/80">
+                                <div class="text-[10px] font-mono text-slate-500 font-bold uppercase">Mã SP: ${acc.id}</div>
+                                <h4 class="font-extrabold text-sm text-white line-clamp-2 leading-snug group-hover:text-brand-400 transition">${acc.title}</h4>
+                                <div class="pt-2 border-t border-slate-800/80 flex items-baseline justify-between">
                                     <div>
-                                        <span class="text-[10px] text-slate-400 font-bold block uppercase">Giá mua:</span>
-                                        <span class="text-base font-black text-amber-400 font-mono">${formatCurrency(finalPrice)}</span>
+                                        <span class="text-base font-black text-amber-400 font-mono">${formatVND(salePrice)}</span>
+                                        ${acc.discount > 0 ? `<span class="text-xs text-slate-500 line-through font-mono ml-1.5">${formatVND(acc.price)}</span>` : ''}
                                     </div>
-                                    ${acc.discountPercent > 0 ? `<span class="text-xs text-slate-500 line-through font-mono font-bold">${formatCurrency(acc.price)}</span>` : ''}
                                 </div>
                             </div>
                         </div>
+
                         <div class="p-5 pt-0 grid grid-cols-2 gap-2.5">
-                            <button onclick="addToCart('${acc.id}')" class="${inCart ? 'bg-slate-800 text-slate-400 border-slate-700' : 'bg-slate-900 hover:bg-slate-800 border-slate-700 text-white'} border font-extrabold py-2.5 text-[11px] uppercase tracking-wider transition flex items-center justify-center">
-                                <i class="fa-solid fa-cart-plus mr-1.5"></i> ${inCart ? 'Đã thêm' : '+ Giỏ'}
+                            <button onclick="toggleCartItem('${acc.id}')" class="w-full ${isCartAdded ? 'bg-slate-800 border-slate-700 text-emerald-400' : 'bg-slate-900 hover:bg-slate-800 border-slate-800 text-slate-300'} border py-2.5 text-xs font-bold uppercase transition flex items-center justify-center">
+                                <i class="fa-solid ${isCartAdded ? 'fa-check' : 'fa-cart-plus'} mr-1.5"></i> ${isCartAdded ? 'Đã Thêm' : 'Giỏ Hàng'}
                             </button>
-                            <button onclick="openBuyCheckoutModal('${acc.id}')" class="bg-brand-500 hover:bg-brand-600 text-white font-extrabold py-2.5 text-[11px] uppercase tracking-wider transition shadow-lg shadow-brand-500/20 flex items-center justify-center">
+                            <button onclick="openBuyCheckoutModal('${acc.id}')" class="w-full bg-brand-500 hover:bg-brand-600 text-white font-extrabold py-2.5 text-xs uppercase tracking-wider transition shadow-md shadow-brand-500/20">
                                 Mua Ngay
                             </button>
                         </div>
@@ -1549,40 +1535,282 @@
             }).join('');
         }
 
+        // LỌC SẢN PHẨM REALTIME
         function filterAccounts() {
-            renderAccountsGrid();
+            const keyword = document.getElementById('search-keyword').value.toLowerCase().trim();
+            const rank = document.getElementById('search-rank').value;
+            const priceRange = document.getElementById('search-price-range').value;
+            const sortPrice = document.getElementById('search-sort-price').value;
+
+            let filtered = appData.accounts.filter(a => a.status === 'available');
+
+            if (keyword) {
+                filtered = filtered.filter(a => a.title.toLowerCase().includes(keyword) || a.id.toLowerCase().includes(keyword));
+            }
+            if (rank) {
+                filtered = filtered.filter(a => a.rank === rank);
+            }
+            if (priceRange) {
+                const [min, max] = priceRange.split('-').map(Number);
+                filtered = filtered.filter(a => {
+                    const finalPrice = a.price * (1 - (a.discount || 0) / 100);
+                    return finalPrice >= min && finalPrice <= max;
+                });
+            }
+            if (sortPrice) {
+                filtered.sort((a, b) => {
+                    const priceA = a.price * (1 - (a.discount || 0) / 100);
+                    const priceB = b.price * (1 - (b.discount || 0) / 100);
+                    return sortPrice === 'asc' ? priceA - priceB : priceB - priceA;
+                });
+            }
+
+            renderAccountsGrid(filtered);
         }
 
         function resetSearchFilter() {
-            if (document.getElementById('search-keyword')) document.getElementById('search-keyword').value = '';
-            if (document.getElementById('search-rank')) document.getElementById('search-rank').value = '';
-            if (document.getElementById('search-price-range')) document.getElementById('search-price-range').value = '';
-            if (document.getElementById('search-sort-price')) document.getElementById('search-sort-price').value = '';
+            document.getElementById('search-keyword').value = '';
+            document.getElementById('search-rank').value = '';
+            document.getElementById('search-price-range').value = '';
+            document.getElementById('search-sort-price').value = '';
             renderAccountsGrid();
         }
 
-        function addToCart(accId) {
-            const acc = state.accounts.find(a => a.id === accId && a.status === 'available');
-            if (!acc) return showToast('Tài khoản không khả dụng!', 'error');
+        // BẢO MẬT & ĐĂNG NHẬP / ĐĂNG KÝ
+        function switchAuthTab(tab) {
+            document.getElementById('form-login').classList.add('hidden');
+            document.getElementById('form-register').classList.add('hidden');
+            document.getElementById('form-forgot-password').classList.add('hidden');
 
-            if (state.cart.some(c => c.id === accId)) {
-                return showToast('Tài khoản đã có trong giỏ hàng!', 'warning');
+            document.getElementById('tab-login').className = 'w-1/2 py-3 text-center font-extrabold text-slate-400 text-xs uppercase tracking-wider transition-all';
+            document.getElementById('tab-register').className = 'w-1/2 py-3 text-center font-extrabold text-slate-400 text-xs uppercase tracking-wider transition-all';
+
+            if (tab === 'login') {
+                document.getElementById('form-login').classList.remove('hidden');
+                document.getElementById('tab-login').className = 'w-1/2 py-3 text-center font-extrabold text-brand-400 border-b-2 border-brand-500 text-xs uppercase tracking-wider transition-all';
+            } else if (tab === 'register') {
+                document.getElementById('form-register').classList.remove('hidden');
+                document.getElementById('tab-register').className = 'w-1/2 py-3 text-center font-extrabold text-brand-400 border-b-2 border-brand-500 text-xs uppercase tracking-wider transition-all';
+            } else if (tab === 'forgot-password') {
+                document.getElementById('form-forgot-password').classList.remove('hidden');
+            }
+        }
+
+        function togglePasswordText(inputId, btn) {
+            const input = document.getElementById(inputId);
+            if (input.type === 'password') {
+                input.type = 'text';
+                btn.textContent = 'Ẩn';
+            } else {
+                input.type = 'password';
+                btn.textContent = 'Hiện';
+            }
+        }
+
+        function handleUserLogin(e) {
+            e.preventDefault();
+            const phone = document.getElementById('login-phone').value.trim();
+            const pass = document.getElementById('login-pass').value.trim();
+
+            const user = appData.users.find(u => (u.username === phone || u.phone === phone) && u.password === pass);
+
+            if (user) {
+                appData.currentUser = user;
+                saveData();
+                renderHeaderUI();
+                showToast(`Xin chào mừng trở lại, ${user.username}!`, 'success');
+                showPage('home');
+            } else {
+                showToast('Tài khoản hoặc mật khẩu không chính xác!', 'error');
+            }
+        }
+
+        function handleRegister(e) {
+            e.preventDefault();
+            const username = document.getElementById('reg-username').value.trim();
+            const phone = document.getElementById('reg-phone').value.trim();
+            const pass1 = document.getElementById('reg-pass1').value.trim();
+            const pass2 = document.getElementById('reg-pass2').value.trim();
+            const cccd = document.getElementById('reg-cccd').value.trim();
+
+            if (pass1 !== pass2) {
+                showToast('Mật khẩu xác nhận không trùng khớp!', 'error');
+                return;
             }
 
-            state.cart.push(acc);
-            saveState();
-            updateNavHeader();
-            renderAccountsGrid();
-            showToast('Đã thêm tài khoản vào giỏ hàng!', 'success');
+            if (appData.users.some(u => u.username === username)) {
+                showToast('Tên tài khoản đã tồn tại!', 'error');
+                return;
+            }
+
+            const newUser = { username, phone, password: pass1, balance: 0, role: 'user', cccd };
+            appData.users.push(newUser);
+            appData.currentUser = newUser;
+            saveData();
+            renderHeaderUI();
+            showToast('Đăng ký tài khoản thành công!', 'success');
+            showPage('home');
         }
 
-        function removeFromCart(accId) {
-            state.cart = state.cart.filter(c => c.id !== accId);
-            saveState();
-            updateNavHeader();
-            renderCartModalItems();
+        function handleAdminLogin(e) {
+            e.preventDefault();
+            const phone = document.getElementById('admin-login-phone').value.trim();
+            const pass = document.getElementById('admin-login-pass').value.trim();
+
+            const admin = appData.users.find(u => (u.username === phone || u.phone === phone) && u.password === pass && u.role === 'admin');
+
+            if (admin) {
+                appData.currentUser = admin;
+                saveData();
+                renderHeaderUI();
+                showToast('Đăng nhập Quản Trị Viên thành công!', 'success');
+                showPage('admin');
+            } else {
+                showToast('Thông tin Quản Trị Viên không chính xác!', 'error');
+            }
+        }
+
+        function handleLogout() {
+            appData.currentUser = null;
+            saveData();
+            renderHeaderUI();
+            showToast('Đã đăng xuất tài khoản an toàn!', 'info');
+            showPage('home');
+        }
+
+        // MUA ACC ĐƠN LẺ KHÔNG MẤT TRANG
+        let checkoutTargetAcc = null;
+        let checkoutCouponApplied = null;
+
+        function openBuyCheckoutModal(accId) {
+            if (!appData.currentUser) {
+                showToast('Vui lòng đăng nhập để thực hiện giao dịch!', 'warning');
+                showPage('auth');
+                return;
+            }
+
+            checkoutTargetAcc = appData.accounts.find(a => a.id === accId);
+            if (!checkoutTargetAcc) return;
+
+            checkoutCouponApplied = null;
+            document.getElementById('checkout-coupon-input').value = '';
+            document.getElementById('checkout-coupon-msg').classList.add('hidden');
+
+            document.getElementById('checkout-acc-id').value = checkoutTargetAcc.id;
+            document.getElementById('checkout-acc-title').textContent = checkoutTargetAcc.title;
+            document.getElementById('checkout-acc-price').textContent = formatVND(checkoutTargetAcc.price);
+            document.getElementById('checkout-acc-sale').textContent = `${checkoutTargetAcc.discount || 0}%`;
+
+            updateCheckoutModalPrice();
+            document.getElementById('buy-checkout-modal').classList.remove('hidden');
+        }
+
+        function closeBuyCheckoutModal() {
+            document.getElementById('buy-checkout-modal').classList.add('hidden');
+        }
+
+        function updateCheckoutModalPrice() {
+            if (!checkoutTargetAcc) return;
+            let price = checkoutTargetAcc.price * (1 - (checkoutTargetAcc.discount || 0) / 100);
+            let discountAmount = 0;
+
+            if (checkoutCouponApplied) {
+                discountAmount = price * (checkoutCouponApplied.percent / 100);
+                price -= discountAmount;
+            }
+
+            document.getElementById('checkout-coupon-discount').textContent = formatVND(discountAmount);
+            document.getElementById('checkout-final-price').textContent = formatVND(Math.max(0, price));
+        }
+
+        function applyCheckoutCoupon() {
+            const code = document.getElementById('checkout-coupon-input').value.trim().toUpperCase();
+            const msgEl = document.getElementById('checkout-coupon-msg');
+
+            const coupon = appData.coupons.find(c => c.code === code && c.status === 'active' && c.quantity > 0);
+            if (coupon) {
+                checkoutCouponApplied = coupon;
+                msgEl.textContent = `Áp dụng thành công mã giãm ${coupon.percent}%!`;
+                msgEl.className = 'text-[11px] font-bold text-emerald-400 mt-1 block';
+                updateCheckoutModalPrice();
+            } else {
+                checkoutCouponApplied = null;
+                msgEl.textContent = 'Mã giảm giá không hợp lệ hoặc đã hết lượt!';
+                msgEl.className = 'text-[11px] font-bold text-red-400 mt-1 block';
+                updateCheckoutModalPrice();
+            }
+        }
+
+        function confirmFinalBuyAccount() {
+            if (!checkoutTargetAcc || !appData.currentUser) return;
+
+            let finalPrice = checkoutTargetAcc.price * (1 - (checkoutTargetAcc.discount || 0) / 100);
+            if (checkoutCouponApplied) {
+                finalPrice -= finalPrice * (checkoutCouponApplied.percent / 100);
+            }
+            finalPrice = Math.max(0, finalPrice);
+
+            if (appData.currentUser.balance < finalPrice) {
+                showToast('Số dư tài khoản không đủ! Vui lòng nạp thêm tiền.', 'error');
+                closeBuyCheckoutModal();
+                showPage('deposit');
+                return;
+            }
+
+            // Trừ tiền người dùng
+            appData.currentUser.balance -= finalPrice;
+            const userInList = appData.users.find(u => u.username === appData.currentUser.username);
+            if (userInList) userInList.balance = appData.currentUser.balance;
+
+            // Đổi trạng thái acc
+            checkoutTargetAcc.status = 'sold';
+
+            // Trừ số lượng mã giảm giá nếu dùng
+            if (checkoutCouponApplied) {
+                checkoutCouponApplied.quantity -= 1;
+                if (checkoutCouponApplied.quantity <= 0) checkoutCouponApplied.status = 'expired';
+            }
+
+            // Lưu lịch sử mua
+            appData.purchases.push({
+                id: 'PUR-' + Date.now(),
+                username: appData.currentUser.username,
+                accId: checkoutTargetAcc.id,
+                title: checkoutTargetAcc.title,
+                price: finalPrice,
+                gameUser: checkoutTargetAcc.user,
+                gamePass: checkoutTargetAcc.pass,
+                date: new Date().toLocaleString('vi-VN')
+            });
+
+            saveData();
+            renderHeaderUI();
             renderAccountsGrid();
-            showToast('Đã xóa khỏi giỏ hàng', 'info');
+            closeBuyCheckoutModal();
+            showToast('Thanh toán mua tài khoản thành công!', 'success');
+            showPage('history');
+        }
+
+        // GIỎ HÀNG
+        function toggleCartItem(accId) {
+            const index = appData.cart.findIndex(i => i.id === accId);
+            if (index > -1) {
+                appData.cart.splice(index, 1);
+                showToast('Đã xóa sản phẩm khỏi giỏ hàng!', 'info');
+            } else {
+                const acc = appData.accounts.find(a => a.id === accId);
+                if (acc) {
+                    appData.cart.push(acc);
+                    showToast('Đã thêm sản phẩm vào giỏ hàng!', 'success');
+                }
+            }
+            saveData();
+            updateCartBadge();
+            renderAccountsGrid();
+        }
+
+        function updateCartBadge() {
+            document.getElementById('cart-badge-count').textContent = appData.cart.length;
         }
 
         function openCartModal() {
@@ -1596,1104 +1824,708 @@
 
         function renderCartModalItems() {
             const container = document.getElementById('cart-items-container');
-            if (!container) return;
-
-            if (state.cart.length === 0) {
-                container.innerHTML = `<div class="p-6 text-center text-xs text-slate-500 font-bold uppercase">Giỏ hàng đang trống!</div>`;
-                document.getElementById('cart-subtotal-price').innerText = '0 đ';
-                document.getElementById('cart-coupon-discount').innerText = '0 đ';
-                document.getElementById('cart-total-price').innerText = '0 đ';
-                return;
-            }
-
-            let subtotal = 0;
-            container.innerHTML = state.cart.map(acc => {
-                const itemPrice = acc.price * (1 - (acc.discountPercent || 0) / 100);
-                subtotal += itemPrice;
-                return `
-                    <div class="bg-slate-950 p-3 border border-slate-800 flex justify-between items-center text-xs">
-                        <div class="pr-2">
-                            <span class="font-bold text-white block max-w-[220px] truncate">${acc.title}</span>
-                            <span class="text-[10px] text-brand-400 font-mono font-bold">${acc.id} • ${formatCurrency(itemPrice)}</span>
+            if (appData.cart.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-500 font-medium text-center py-6">Giỏ hàng của bạn đang trống!</p>`;
+            } else {
+                container.innerHTML = appData.cart.map(item => {
+                    const price = item.price * (1 - (item.discount || 0) / 100);
+                    return `
+                        <div class="bg-slate-950 p-3 border border-slate-800 flex items-center justify-between text-xs">
+                            <div class="truncate max-w-[240px]">
+                                <div class="font-bold text-white truncate">${item.title}</div>
+                                <div class="text-[10px] text-slate-400 font-mono">${item.id} — ${formatVND(price)}</div>
+                            </div>
+                            <button onclick="toggleCartItem('${item.id}'); renderCartModalItems();" class="text-red-400 hover:text-red-300 p-1.5"><i class="fa-solid fa-trash"></i></button>
                         </div>
-                        <button onclick="removeFromCart('${acc.id}')" class="text-red-400 hover:text-red-300 p-1.5"><i class="fa-solid fa-trash"></i></button>
-                    </div>
-                `;
-            }).join('');
+                    `;
+                }).join('');
+            }
+            updateCartTotalPrice();
+        }
 
-            let couponDiscountVal = 0;
-            if (appliedCartCoupon) {
-                couponDiscountVal = subtotal * (appliedCartCoupon.percent / 100);
+        let cartCouponApplied = null;
+
+        function updateCartTotalPrice() {
+            let subtotal = appData.cart.reduce((sum, item) => sum + item.price * (1 - (item.discount || 0) / 100), 0);
+            let discount = 0;
+
+            if (cartCouponApplied) {
+                discount = subtotal * (cartCouponApplied.percent / 100);
             }
 
-            const finalTotal = Math.max(0, subtotal - couponDiscountVal);
-
-            document.getElementById('cart-subtotal-price').innerText = formatCurrency(subtotal);
-            document.getElementById('cart-coupon-discount').innerText = '-' + formatCurrency(couponDiscountVal);
-            document.getElementById('cart-total-price').innerText = formatCurrency(finalTotal);
+            document.getElementById('cart-subtotal-price').textContent = formatVND(subtotal);
+            document.getElementById('cart-coupon-discount').textContent = formatVND(discount);
+            document.getElementById('cart-total-price').textContent = formatVND(Math.max(0, subtotal - discount));
         }
 
         function applyCartCoupon() {
-            const input = document.getElementById('cart-coupon-input').value.trim().toUpperCase();
-            const msg = document.getElementById('cart-coupon-msg');
-            msg.classList.remove('hidden', 'text-emerald-400', 'text-red-400');
+            const code = document.getElementById('cart-coupon-input').value.trim().toUpperCase();
+            const msgEl = document.getElementById('cart-coupon-msg');
 
-            if (!input) {
-                msg.classList.add('text-red-400');
-                msg.innerText = 'Vui lòng nhập mã ưu đãi!';
-                return;
+            const coupon = appData.coupons.find(c => c.code === code && c.status === 'active' && c.quantity > 0);
+            if (coupon) {
+                cartCouponApplied = coupon;
+                msgEl.textContent = `Áp dụng thành công mã giảm ${coupon.percent}%!`;
+                msgEl.className = 'text-[11px] font-bold text-emerald-400 mt-1 block';
+            } else {
+                cartCouponApplied = null;
+                msgEl.textContent = 'Mã không hợp lệ hoặc đã hết lượt!';
+                msgEl.className = 'text-[11px] font-bold text-red-400 mt-1 block';
             }
-
-            const cp = state.coupons.find(c => c.code === input);
-            if (!cp || cp.expired || cp.used >= cp.quantity) {
-                msg.classList.add('text-red-400');
-                msg.innerText = 'Mã giảm giá không hợp lệ hoặc đã hết hạn!';
-                return;
-            }
-
-            appliedCartCoupon = cp;
-            msg.classList.add('text-emerald-400');
-            msg.innerText = `Áp dụng thành công mã giảm ${cp.percent}%!`;
-            renderCartModalItems();
+            updateCartTotalPrice();
         }
 
         function checkoutCartItems() {
-            if (!state.currentUser) {
+            if (!appData.currentUser) {
+                showToast('Vui lòng đăng nhập để thực hiện thanh toán!', 'warning');
                 closeCartModal();
-                return showPage('auth');
-            }
-            if (state.cart.length === 0) return showToast('Giỏ hàng trống!', 'error');
-
-            let subtotal = 0;
-            state.cart.forEach(acc => {
-                subtotal += acc.price * (1 - (acc.discountPercent || 0) / 100);
-            });
-
-            let discountVal = 0;
-            if (appliedCartCoupon) {
-                discountVal = subtotal * (appliedCartCoupon.percent / 100);
+                showPage('auth');
+                return;
             }
 
-            const total = Math.max(0, subtotal - discountVal);
+            if (appData.cart.length === 0) {
+                showToast('Giỏ hàng trống!', 'error');
+                return;
+            }
 
-            if (state.currentUser.balance < total) {
-                showToast('Số dư tài khoản không đủ để thanh toán giỏ hàng!', 'error');
+            let subtotal = appData.cart.reduce((sum, item) => sum + item.price * (1 - (item.discount || 0) / 100), 0);
+            if (cartCouponApplied) subtotal -= subtotal * (cartCouponApplied.percent / 100);
+            subtotal = Math.max(0, subtotal);
+
+            if (appData.currentUser.balance < subtotal) {
+                showToast('Số dư tài khoản không đủ để thanh toán toàn bộ giỏ!', 'error');
                 closeCartModal();
-                return showPage('deposit');
+                showPage('deposit');
+                return;
             }
 
-            // Trừ tiền & tạo giao dịch
-            state.currentUser.balance -= total;
-            const userIdx = state.users.findIndex(u => u.phone === state.currentUser.phone);
-            if (userIdx !== -1) state.users[userIdx].balance = state.currentUser.balance;
+            // Thanh toán
+            appData.currentUser.balance -= subtotal;
+            const userInList = appData.users.find(u => u.username === appData.currentUser.username);
+            if (userInList) userInList.balance = appData.currentUser.balance;
 
-            // Xử lý mã coupon (HẾT HẠN NGAY)
-            if (appliedCartCoupon) {
-                const cIdx = state.coupons.findIndex(c => c.code === appliedCartCoupon.code);
-                if (cIdx !== -1) {
-                    state.coupons[cIdx].used += 1;
-                    state.coupons[cIdx].expired = true; // Yêu cầu 1: Đổi sang trạng thái hết hạn ngay lập tức
-                }
-            }
+            appData.cart.forEach(item => {
+                const acc = appData.accounts.find(a => a.id === item.id);
+                if (acc) acc.status = 'sold';
 
-            // Chuyển trạng thái các acc
-            state.cart.forEach(accItem => {
-                const accIdx = state.accounts.findIndex(a => a.id === accItem.id);
-                if (accIdx !== -1) {
-                    state.accounts[accIdx].status = 'sold';
-                    state.accounts[accIdx].buyerPhone = state.currentUser.phone;
-                    state.accounts[accIdx].buyDate = new Date().toLocaleString('vi-VN');
-                }
-
-                state.purchases.push({
-                    id: 'PUR-' + Date.now() + Math.floor(Math.random()*100),
-                    userPhone: state.currentUser.phone,
-                    username: state.currentUser.username,
-                    accId: accItem.id,
-                    accTitle: accItem.title,
-                    accUser: accItem.user,
-                    accPass: accItem.pass,
-                    price: accItem.price * (1 - (accItem.discountPercent || 0) / 100),
+                appData.purchases.push({
+                    id: 'PUR-' + Date.now() + Math.floor(Math.random() * 100),
+                    username: appData.currentUser.username,
+                    accId: item.id,
+                    title: item.title,
+                    price: item.price * (1 - (item.discount || 0) / 100),
+                    gameUser: item.user,
+                    gamePass: item.pass,
                     date: new Date().toLocaleString('vi-VN')
                 });
             });
 
-            state.cart = [];
-            appliedCartCoupon = null;
-            saveState();
-
+            appData.cart = [];
+            saveData();
+            updateCartBadge();
+            renderHeaderUI();
+            renderAccountsGrid();
             closeCartModal();
-            updateNavHeader();
-            renderAccountsGrid();
-            showToast('Thanh toán giỏ hàng thành công! Acc đã được chuyển vào Tủ Đồ.', 'success');
+            showToast('Thanh toán toàn bộ giỏ hàng thành công!', 'success');
             showPage('history');
         }
 
-        // ---------- MUA LẺ ACC ----------
-        function openBuyCheckoutModal(accId) {
-            if (!state.currentUser) {
-                showToast('Vui lòng đăng nhập để mua tài khoản!', 'warning');
-                return showPage('auth');
+        // TỦ ĐỒ VÀ LỊCH SỬ MUA TÀI KHOẢN
+        function renderHistory() {
+            const container = document.getElementById('history-list');
+            if (!appData.currentUser) return;
+
+            let list = appData.purchases;
+            if (appData.currentUser.role !== 'admin') {
+                list = list.filter(p => p.username === appData.currentUser.username);
             }
-
-            const acc = state.accounts.find(a => a.id === accId && a.status === 'available');
-            if (!acc) return showToast('Tài khoản không khả dụng!', 'error');
-
-            appliedCheckoutCoupon = null;
-            document.getElementById('checkout-acc-id').value = acc.id;
-            document.getElementById('checkout-acc-title').innerText = acc.title;
-            document.getElementById('checkout-acc-price').innerText = formatCurrency(acc.price);
-            document.getElementById('checkout-acc-sale').innerText = (acc.discountPercent || 0) + '%';
-            document.getElementById('checkout-coupon-input').value = '';
-            document.getElementById('checkout-coupon-msg').classList.add('hidden');
-
-            updateCheckoutPriceDisplay();
-            document.getElementById('buy-checkout-modal').classList.remove('hidden');
-        }
-
-        function closeBuyCheckoutModal() {
-            document.getElementById('buy-checkout-modal').classList.add('hidden');
-        }
-
-        function updateCheckoutPriceDisplay() {
-            const accId = document.getElementById('checkout-acc-id').value;
-            const acc = state.accounts.find(a => a.id === accId);
-            if (!acc) return;
-
-            const basePrice = acc.price * (1 - (acc.discountPercent || 0) / 100);
-            let couponDiscountVal = 0;
-
-            if (appliedCheckoutCoupon) {
-                couponDiscountVal = basePrice * (appliedCheckoutCoupon.percent / 100);
-            }
-
-            const finalPrice = Math.max(0, basePrice - couponDiscountVal);
-
-            document.getElementById('checkout-coupon-discount').innerText = '-' + formatCurrency(couponDiscountVal);
-            document.getElementById('checkout-final-price').innerText = formatCurrency(finalPrice);
-        }
-
-        function applyCheckoutCoupon() {
-            const input = document.getElementById('checkout-coupon-input').value.trim().toUpperCase();
-            const msg = document.getElementById('checkout-coupon-msg');
-            msg.classList.remove('hidden', 'text-emerald-400', 'text-red-400');
-
-            if (!input) {
-                msg.classList.add('text-red-400');
-                msg.innerText = 'Vui lòng nhập mã!';
-                return;
-            }
-
-            const cp = state.coupons.find(c => c.code === input);
-            if (!cp || cp.expired || cp.used >= cp.quantity) {
-                msg.classList.add('text-red-400');
-                msg.innerText = 'Mã giảm giá hết hạn hoặc không tồn tại!';
-                return;
-            }
-
-            appliedCheckoutCoupon = cp;
-            msg.classList.add('text-emerald-400');
-            msg.innerText = `Áp dụng thành công mã giảm ${cp.percent}%!`;
-            updateCheckoutPriceDisplay();
-        }
-
-        function confirmFinalBuyAccount() {
-            const accId = document.getElementById('checkout-acc-id').value;
-            const acc = state.accounts.find(a => a.id === accId && a.status === 'available');
-            if (!acc) return showToast('Sản phẩm đã được mua bởi người khác!', 'error');
-
-            const basePrice = acc.price * (1 - (acc.discountPercent || 0) / 100);
-            let couponDiscountVal = 0;
-            if (appliedCheckoutCoupon) {
-                couponDiscountVal = basePrice * (appliedCheckoutCoupon.percent / 100);
-            }
-            const finalPrice = Math.max(0, basePrice - couponDiscountVal);
-
-            if (state.currentUser.balance < finalPrice) {
-                showToast('Số dư ví không đủ! Vui lòng nạp thêm tiền.', 'error');
-                closeBuyCheckoutModal();
-                return showPage('deposit');
-            }
-
-            // Thực hiện mua
-            state.currentUser.balance -= finalPrice;
-            const userIdx = state.users.findIndex(u => u.phone === state.currentUser.phone);
-            if (userIdx !== -1) state.users[userIdx].balance = state.currentUser.balance;
-
-            acc.status = 'sold';
-            acc.buyerPhone = state.currentUser.phone;
-            acc.buyDate = new Date().toLocaleString('vi-VN');
-
-            // Đổi mã coupon sang HẾT HẠN ngay
-            if (appliedCheckoutCoupon) {
-                const cIdx = state.coupons.findIndex(c => c.code === appliedCheckoutCoupon.code);
-                if (cIdx !== -1) {
-                    state.coupons[cIdx].used += 1;
-                    state.coupons[cIdx].expired = true; // Yêu cầu 1: Đổi sang trạng thái hết hạn
-                }
-            }
-
-            state.purchases.push({
-                id: 'PUR-' + Date.now(),
-                userPhone: state.currentUser.phone,
-                username: state.currentUser.username,
-                accId: acc.id,
-                accTitle: acc.title,
-                accUser: acc.user,
-                accPass: acc.pass,
-                price: finalPrice,
-                date: new Date().toLocaleString('vi-VN')
-            });
-
-            saveState();
-            closeBuyCheckoutModal();
-            updateNavHeader();
-            renderAccountsGrid();
-            showToast('Mua tài khoản thành công! Thông tin tài khoản đã mở trong Tủ Đồ.', 'success');
-            showPage('history');
-        }
-
-        // ---------- ĐĂNG NHẬP / ĐĂNG KÝ USER ----------
-        function switchAuthTab(tab) {
-            const fLogin = document.getElementById('form-login');
-            const fReg = document.getElementById('form-register');
-            const fForgot = document.getElementById('form-forgot-password');
-            const tabL = document.getElementById('tab-login');
-            const tabR = document.getElementById('tab-register');
-
-            if (tab === 'login') {
-                fLogin.classList.remove('hidden');
-                fReg.classList.add('hidden');
-                fForgot.classList.add('hidden');
-                tabL.className = 'w-1/2 py-3 text-center font-extrabold text-brand-400 border-b-2 border-brand-500 text-xs uppercase tracking-wider transition-all';
-                tabR.className = 'w-1/2 py-3 text-center font-extrabold text-slate-400 text-xs uppercase tracking-wider transition-all';
-            } else if (tab === 'register') {
-                fLogin.classList.add('hidden');
-                fReg.classList.remove('hidden');
-                fForgot.classList.add('hidden');
-                tabR.className = 'w-1/2 py-3 text-center font-extrabold text-brand-400 border-b-2 border-brand-500 text-xs uppercase tracking-wider transition-all';
-                tabL.className = 'w-1/2 py-3 text-center font-extrabold text-slate-400 text-xs uppercase tracking-wider transition-all';
-            } else if (tab === 'forgot-password') {
-                fLogin.classList.add('hidden');
-                fReg.classList.add('hidden');
-                fForgot.classList.remove('hidden');
-            }
-        }
-
-        function checkUsernameExist(input) {
-            const err = document.getElementById('reg-username-error');
-            const val = input.value.trim().toLowerCase();
-            if (state.users.some(u => u.username.toLowerCase() === val)) {
-                err.classList.remove('hidden');
-            } else {
-                err.classList.add('hidden');
-            }
-        }
-
-        function checkVerifiedConflictRealtime(input, type) {
-            const val = input.value.trim();
-            if (type === 'phone') {
-                const err = document.getElementById('reg-phone-error');
-                const exist = state.users.some(u => u.phone === val) || state.verifiedList.some(v => v.phone === val);
-                if (exist && val.length > 0) err.classList.remove('hidden');
-                else err.classList.add('hidden');
-            } else if (type === 'cccd') {
-                const err = document.getElementById('reg-cccd-error');
-                const exist = state.users.some(u => u.cccd === val) || state.verifiedList.some(v => v.cccd === val);
-                if (exist && val.length > 0) err.classList.remove('hidden');
-                else err.classList.add('hidden');
-            }
-        }
-
-        function checkPasswordStrength(pass, elementId) {
-            const el = document.getElementById(elementId);
-            if (!el) return;
-            if (pass.length === 0) { el.innerText = ''; return; }
-            if (pass.length < 6) { el.className = 'text-[11px] mt-1 font-bold text-red-400'; el.innerText = 'Mật khẩu yếu (cần tối thiểu 6 ký tự)'; }
-            else if (pass.length < 10) { el.className = 'text-[11px] mt-1 font-bold text-amber-400'; el.innerText = 'Mật khẩu vừa'; }
-            else { el.className = 'text-[11px] mt-1 font-bold text-emerald-400'; el.innerText = 'Mật khẩu mạnh!'; }
-        }
-
-        function checkRegPassMatch() {
-            const p1 = document.getElementById('reg-pass1').value;
-            const p2 = document.getElementById('reg-pass2').value;
-            const msg = document.getElementById('reg-pass2-match-msg');
-            if (!p2) { msg.classList.add('hidden'); return; }
-            msg.classList.remove('hidden');
-            if (p1 === p2) {
-                msg.className = 'text-[11px] mt-1 font-semibold text-emerald-400';
-                msg.innerText = 'Mật khẩu trùng khớp!';
-            } else {
-                msg.className = 'text-[11px] mt-1 font-semibold text-red-400';
-                msg.innerText = 'Mật khẩu chưa trùng khớp!';
-            }
-        }
-
-        function handleUserLogin(e) {
-            e.preventDefault();
-            const phone = document.getElementById('login-phone').value.trim();
-            const pass = document.getElementById('login-pass').value.trim();
-
-            const user = state.users.find(u => (u.phone === phone || u.username === phone) && u.password === pass);
-            if (user) {
-                state.currentUser = user;
-                saveState();
-                showToast(`Chào mừng thành viên ${user.username} quay trở lại!`, 'success');
-                showPage('home');
-            } else {
-                showToast('Sai tên tài khoản, SĐT hoặc mật khẩu!', 'error');
-            }
-        }
-
-        function handleRegister(e) {
-            e.preventDefault();
-            const username = document.getElementById('reg-username').value.trim();
-            const phone = document.getElementById('reg-phone').value.trim();
-            const pass1 = document.getElementById('reg-pass1').value.trim();
-            const pass2 = document.getElementById('reg-pass2').value.trim();
-            const cccd = document.getElementById('reg-cccd').value.trim();
-
-            if (pass1 !== pass2) return showToast('Xác nhận mật khẩu không khớp!', 'error');
-            if (phone.length !== 10) return showToast('SĐT phải đúng 10 chữ số!', 'error');
-            if (cccd.length !== 12) return showToast('CCCD phải đúng 12 chữ số!', 'error');
-
-            if (state.users.some(u => u.username.toLowerCase() === username.toLowerCase())) {
-                return showToast('Tên tài khoản đã tồn tại!', 'error');
-            }
-            if (state.users.some(u => u.phone === phone) || state.verifiedList.some(v => v.phone === phone)) {
-                return showToast('SĐT đã được đăng ký hoặc nằm trong danh sách xác minh!', 'error');
-            }
-            if (state.users.some(u => u.cccd === cccd) || state.verifiedList.some(v => v.cccd === cccd)) {
-                return showToast('CCCD đã được sử dụng!', 'error');
-            }
-
-            const newUser = {
-                username,
-                phone,
-                password: pass1,
-                cccd,
-                balance: 0,
-                role: 'user',
-                createdAt: new Date().toLocaleString('vi-VN')
-            };
-
-            state.users.push(newUser);
-            state.currentUser = newUser;
-            saveState();
-
-            showToast('Đăng ký tài khoản thành công! Tự động đăng nhập.', 'success');
-            showPage('home');
-        }
-
-        function handleForgotPassword(e) {
-            e.preventDefault();
-            const cccd = document.getElementById('forgot-pass-cccd').value.trim();
-            const newPass = document.getElementById('forgot-newpass').value.trim();
-
-            const userIdx = state.users.findIndex(u => u.cccd === cccd);
-            if (userIdx !== -1) {
-                state.users[userIdx].password = newPass;
-                saveState();
-                showToast('Đặt lại mật khẩu thành công! Vui lòng đăng nhập.', 'success');
-                switchAuthTab('login');
-            } else {
-                showToast('Không tìm thấy tài khoản với số CCCD này!', 'error');
-            }
-        }
-
-        function togglePasswordText(inputId, btn) {
-            const input = document.getElementById(inputId);
-            if (input.type === 'password') {
-                input.type = 'text';
-                btn.innerText = 'Ẩn';
-            } else {
-                input.type = 'password';
-                btn.innerText = 'Hiện';
-            }
-        }
-
-        // ---------- ĐĂNG NHẬP / QUÊN MK ADMIN ----------
-        function switchAdminAuthMode(mode) {
-            const fLog = document.getElementById('form-admin-login');
-            const fForg = document.getElementById('form-admin-forgot');
-            if (mode === 'login') {
-                fLog.classList.remove('hidden');
-                fForg.classList.add('hidden');
-            } else {
-                fLog.classList.add('hidden');
-                fForg.classList.remove('hidden');
-            }
-        }
-
-        function handleAdminLogin(e) {
-            e.preventDefault();
-            const acc = document.getElementById('admin-login-phone').value.trim();
-            const pass = document.getElementById('admin-login-pass').value.trim();
-
-            if (acc === 'admin' && pass === 'admin123') {
-                const adminUser = { username: 'ADMIN_SYSTEM', phone: '0869719516', role: 'admin', balance: 999999999 };
-                state.currentUser = adminUser;
-                saveState();
-                showToast('Đăng nhập Quản Trị Viên thành công!', 'success');
-                showPage('admin');
-            } else {
-                const foundAdmin = state.users.find(u => u.role === 'admin' && (u.username === acc || u.phone === acc) && u.password === pass);
-                if (foundAdmin) {
-                    state.currentUser = foundAdmin;
-                    saveState();
-                    showToast('Đăng nhập Quản Trị Viên thành công!', 'success');
-                    showPage('admin');
-                } else {
-                    showToast('Tài khoản hoặc mật khẩu Admin không đúng!', 'error');
-                }
-            }
-        }
-
-        function handleAdminForgot(e) {
-            e.preventDefault();
-            const cccd = document.getElementById('admin-forgot-cccd').value.trim();
-            const newPass = document.getElementById('admin-forgot-newpass').value.trim();
-
-            if (cccd === state.config.adminCccd) {
-                showToast(`Khôi phục MK thành công! Mật khẩu Admin mặc định là: ${newPass}`, 'success');
-                switchAdminAuthMode('login');
-            } else {
-                showToast('Số CCCD Admin xác minh bảo mật không chính xác!', 'error');
-            }
-        }
-
-        // ---------- TRANG NẠP TIỀN VIETQR ----------
-        function renderDepositPageConfig() {
-            if (!state.currentUser) {
-                showToast('Vui lòng đăng nhập trước khi nạp tiền!', 'warning');
-                return showPage('auth');
-            }
-
-            if (state.currentUser.role === 'admin') {
-                document.getElementById('btn-config-vietqr').classList.remove('hidden');
-            } else {
-                document.getElementById('btn-config-vietqr').classList.add('hidden');
-            }
-        }
-
-        function generateVietQR() {
-            const amount = getUnformattedCurrencyValue(document.getElementById('deposit-amount-formatted'));
-            if (amount < 10000) return showToast('Số tiền nạp tối thiểu là 10,000 VNĐ!', 'error');
-
-            const bank = state.config.bankId;
-            const accNo = state.config.accNo;
-            const accName = encodeURIComponent(state.config.accName);
-            const content = `NAP ${state.currentUser.username} ${Date.now().toString().slice(-4)}`;
-
-            const qrUrl = `https://img.vietqr.io/image/${bank}-${accNo}-compact2.png?amount=${amount}&addInfo=${encodeURIComponent(content)}&accountName=${accName}`;
-
-            document.getElementById('vietqr-img').src = qrUrl;
-            document.getElementById('qr-bank-name').innerText = VIETNAM_BANKS.find(b => b.id === bank)?.name || bank;
-            document.getElementById('qr-acc-number').innerText = accNo;
-            document.getElementById('qr-acc-holder').innerText = state.config.accName;
-            document.getElementById('qr-display-amount').innerText = formatCurrency(amount);
-            document.getElementById('qr-display-content').innerText = content;
-
-            document.getElementById('deposit-input-box').classList.add('hidden');
-            document.getElementById('deposit-qr-box').classList.remove('hidden');
-            document.getElementById('qr-expired-message').classList.add('hidden');
-            document.getElementById('qr-container-view').classList.remove('hidden');
-
-            startQrCountdownTimer(state.config.qrMinutes, state.config.qrSeconds);
-        }
-
-        function startQrCountdownTimer(m, s) {
-            clearInterval(qrTimerInterval);
-            let totalSeconds = m * 60 + s;
-            const display = document.getElementById('qr-countdown-timer');
-
-            qrTimerInterval = setInterval(() => {
-                if (totalSeconds <= 0) {
-                    clearInterval(qrTimerInterval);
-                    display.innerText = "00:00";
-                    document.getElementById('qr-container-view').classList.add('hidden');
-                    document.getElementById('qr-expired-message').classList.remove('hidden');
-                    return;
-                }
-                totalSeconds--;
-                let min = Math.floor(totalSeconds / 60);
-                let sec = totalSeconds % 60;
-                display.innerText = `${min < 10 ? '0' : ''}${min}:${sec < 10 ? '0' : ''}${sec}`;
-            }, 1000);
-        }
-
-        function cancelDeposit() {
-            clearInterval(qrTimerInterval);
-            document.getElementById('deposit-input-box').classList.remove('hidden');
-            document.getElementById('deposit-qr-box').classList.add('hidden');
-        }
-
-        function confirmPaid() {
-            // Yêu cầu 3: Gửi yêu cầu lập tức về Admin
-            const amount = getUnformattedCurrencyValue(document.getElementById('deposit-amount-formatted'));
-            const content = document.getElementById('qr-display-content').innerText;
-
-            const depositReq = {
-                id: 'DEP-' + Date.now(),
-                userPhone: state.currentUser.phone,
-                username: state.currentUser.username,
-                amount: amount,
-                content: content,
-                bonusPercent: state.config.bonusPercent,
-                status: 'pending',
-                date: new Date().toLocaleString('vi-VN')
-            };
-
-            state.deposits.push(depositReq);
-            saveState();
-
-            document.getElementById('deposit-loading').classList.remove('hidden');
-            document.getElementById('deposit-actions').classList.add('hidden');
-
-            setTimeout(() => {
-                document.getElementById('deposit-loading').classList.add('hidden');
-                document.getElementById('deposit-actions').classList.remove('hidden');
-                cancelDeposit();
-
-                showToast('Yêu cầu nạp tiền đã được gửi tới Admin duyệt!', 'success');
-                showPage('user-history');
-            }, 1500);
-        }
-
-        // ---------- TRANG RÚT TIỀN ----------
-        function renderWithdrawPage() {
-            if (!state.currentUser) {
-                showToast('Vui lòng đăng nhập trước!', 'warning');
-                return showPage('auth');
-            }
-
-            document.getElementById('withdraw-user-balance').innerText = formatCurrency(state.currentUser.balance);
-
-            const bankSelect = document.getElementById('withdraw-bank');
-            if (bankSelect) {
-                bankSelect.innerHTML = VIETNAM_BANKS.map(b => `<option value="${b.name}">${b.name}</option>`).join('');
-            }
-
-            updateWithdrawFeeCalc();
-            renderWithdrawHistory();
-        }
-
-        function updateWithdrawFeeCalc() {
-            const amount = getUnformattedCurrencyValue(document.getElementById('withdraw-amount'));
-            const feeType = state.config.withdrawFeeType;
-            const feeVal = state.config.withdrawFeeVal;
-
-            let feeAmount = 0;
-            if (feeType === 'fixed') {
-                feeAmount = feeVal;
-            } else {
-                feeAmount = amount * (feeVal / 100);
-            }
-
-            const net = Math.max(0, amount - feeAmount);
-
-            document.getElementById('withdraw-fee-rate-display').innerText = feeType === 'fixed' ? formatCurrency(feeVal) : `${feeVal}%`;
-            document.getElementById('withdraw-fee-amount-display').innerText = formatCurrency(feeAmount);
-            document.getElementById('withdraw-net-amount-display').innerText = formatCurrency(net);
-        }
-
-        function handleWithdrawSubmit(e) {
-            e.preventDefault();
-            // Yêu cầu 3: Gửi yêu cầu nạp/rút lập tức về Admin
-            const bank = document.getElementById('withdraw-bank').value;
-            const accNo = document.getElementById('withdraw-acc-no').value.trim();
-            const accName = document.getElementById('withdraw-acc-name').value.trim();
-            const amount = getUnformattedCurrencyValue(document.getElementById('withdraw-amount'));
-
-            if (amount < 50000) return showToast('Số tiền rút tối thiểu 50,000 VNĐ!', 'error');
-            if (state.currentUser.balance < amount) return showToast('Số dư ví không đủ để rút!', 'error');
-
-            const withdrawReq = {
-                id: 'WIT-' + Date.now(),
-                userPhone: state.currentUser.phone,
-                username: state.currentUser.username,
-                bank,
-                accNo,
-                accName,
-                amount,
-                status: 'pending',
-                date: new Date().toLocaleString('vi-VN')
-            };
-
-            // Trừ tạm hoặc khóa số dư ví
-            state.currentUser.balance -= amount;
-            const uIdx = state.users.findIndex(u => u.phone === state.currentUser.phone);
-            if (uIdx !== -1) state.users[uIdx].balance = state.currentUser.balance;
-
-            state.withdraws.push(withdrawReq);
-            saveState();
-
-            updateNavHeader();
-            document.getElementById('withdraw-user-balance').innerText = formatCurrency(state.currentUser.balance);
-            renderWithdrawHistory();
-
-            showToast('Yêu cầu rút tiền đã được chuyển tới Admin phê duyệt!', 'success');
-        }
-
-        function renderWithdrawHistory() {
-            const table = document.getElementById('withdraw-history-table');
-            if (!table) return;
-
-            const list = state.withdraws.filter(w => w.userPhone === state.currentUser?.phone);
 
             if (list.length === 0) {
-                table.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-500">Chưa có lịch sử rút tiền</td></tr>`;
-                return;
-            }
-
-            table.innerHTML = list.map(w => {
-                let badge = '<span class="text-amber-400 font-bold">Chờ duyệt</span>';
-                if (w.status === 'approved') badge = '<span class="text-emerald-400 font-bold">Thành công</span>';
-                if (w.status === 'rejected') badge = '<span class="text-red-400 font-bold">Từ chối</span>';
-
-                return `
-                    <tr class="hover:bg-slate-900/50">
-                        <td class="p-3 font-semibold text-white max-w-[120px] truncate">${w.bank}</td>
-                        <td class="p-3 font-mono">${w.accNo} <br><span class="text-[10px] text-slate-400 uppercase">${w.accName}</span></td>
-                        <td class="p-3 font-mono font-bold text-amber-400">${formatCurrency(w.amount)}</td>
-                        <td class="p-3 text-[10px] text-slate-400">${w.date}</td>
-                        <td class="p-3">${badge}</td>
-                    </tr>
-                `;
-            }).join('');
-        }
-
-        // ---------- LỊCH SỬ DÀNH CHO USER ----------
-        function switchUserHistoryTab(tab) {
-            const dBox = document.getElementById('user-history-deposit-box');
-            const wBox = document.getElementById('user-history-withdraw-box');
-            const tabD = document.getElementById('tab-user-deposits');
-            const tabW = document.getElementById('tab-user-withdraws');
-
-            if (tab === 'deposits') {
-                dBox.classList.remove('hidden');
-                wBox.classList.add('hidden');
-                tabD.className = 'font-extrabold text-brand-400 border-b-2 border-brand-500 pb-2 text-xs uppercase tracking-wider transition';
-                tabW.className = 'font-extrabold text-slate-400 pb-2 text-xs uppercase tracking-wider transition';
-            } else {
-                dBox.classList.add('hidden');
-                wBox.classList.remove('hidden');
-                tabW.className = 'font-extrabold text-brand-400 border-b-2 border-brand-500 pb-2 text-xs uppercase tracking-wider transition';
-                tabD.className = 'font-extrabold text-slate-400 pb-2 text-xs uppercase tracking-wider transition';
-            }
-        }
-
-        function renderUserHistoryPage() {
-            if (!state.currentUser) return showPage('auth');
-
-            // Nạp
-            const dTable = document.getElementById('user-deposit-history-table');
-            const deposits = state.deposits.filter(d => d.userPhone === state.currentUser.phone);
-
-            if (deposits.length === 0) {
-                dTable.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-500">Không có giao dịch nạp tiền</td></tr>`;
-            } else {
-                dTable.innerHTML = deposits.map(d => {
-                    let st = '<span class="text-amber-400 font-bold">Đang chờ Admin duyệt</span>';
-                    if (d.status === 'approved') st = '<span class="text-emerald-400 font-bold">Đã cộng tiền</span>';
-                    if (d.status === 'rejected') st = '<span class="text-red-400 font-bold">Từ chối</span>';
-
-                    return `
-                        <tr class="hover:bg-slate-900/50">
-                            <td class="p-3 font-mono text-brand-400 font-bold">${d.id}</td>
-                            <td class="p-3 font-mono font-bold text-white">${formatCurrency(d.amount)}</td>
-                            <td class="p-3 font-mono text-emerald-400">+${d.bonusPercent || 0}%</td>
-                            <td class="p-3 text-[10px] text-slate-400">${d.date}</td>
-                            <td class="p-3">${st}</td>
-                        </tr>
-                    `;
-                }).join('');
-            }
-
-            // Rút
-            const wTable = document.getElementById('user-withdraw-history-table');
-            const withdraws = state.withdraws.filter(w => w.userPhone === state.currentUser.phone);
-
-            if (withdraws.length === 0) {
-                wTable.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-500">Không có giao dịch rút tiền</td></tr>`;
-            } else {
-                wTable.innerHTML = withdraws.map(w => {
-                    let st = '<span class="text-amber-400 font-bold">Chờ duyệt</span>';
-                    if (w.status === 'approved') st = '<span class="text-emerald-400 font-bold">Thành công</span>';
-                    if (w.status === 'rejected') st = '<span class="text-red-400 font-bold">Hoàn tiền</span>';
-
-                    return `
-                        <tr class="hover:bg-slate-900/50">
-                            <td class="p-3 font-semibold text-white max-w-[120px] truncate">${w.bank}</td>
-                            <td class="p-3 font-mono">${w.accNo} <br><span class="text-[10px] text-slate-400 uppercase">${w.accName}</span></td>
-                            <td class="p-3 font-mono font-bold text-amber-400">${formatCurrency(w.amount)}</td>
-                            <td class="p-3 text-[10px] text-slate-400">${w.date}</td>
-                            <td class="p-3">${st}</td>
-                        </tr>
-                    `;
-                }).join('');
-            }
-        }
-
-        // ---------- TỦ ĐỒ / LỊCH SỬ MUA ACC (YÊU CẦU 2) ----------
-        function renderHistory() {
-            if (!state.currentUser) return showPage('auth');
-
-            const isSystemAdmin = state.currentUser.role === 'admin';
-            const filterBox = document.getElementById('admin-history-filter-box');
-            const filterSelect = document.getElementById('admin-history-user-filter');
-
-            let displayPurchases = [];
-
-            if (isSystemAdmin) {
-                // Yêu cầu 2: Admin xem được TẤT CẢ lịch sử mua acc của các thành viên
-                filterBox.classList.remove('hidden');
-
-                // Fill dropdown user
-                filterSelect.innerHTML = `<option value="ALL">Tất Cả Thành Viên</option>` +
-                    state.users.map(u => `<option value="${u.phone}">${u.username} (${u.phone})</option>`).join('');
-
-                const selectedUserPhone = filterSelect.value;
-                if (selectedUserPhone === 'ALL') {
-                    displayPurchases = [...state.purchases];
-                } else {
-                    displayPurchases = state.purchases.filter(p => p.userPhone === selectedUserPhone);
-                }
-            } else {
-                // User thường chỉ xem lịch sử mua acc của chính mình
-                filterBox.classList.add('hidden');
-                displayPurchases = state.purchases.filter(p => p.userPhone === state.currentUser.phone);
-            }
-
-            const listContainer = document.getElementById('history-list');
-            if (displayPurchases.length === 0) {
-                listContainer.innerHTML = `
-                    <div class="enterprise-card p-12 text-center text-slate-500 space-y-3">
-                        <i class="fa-solid fa-box-open text-4xl text-slate-600"></i>
-                        <p class="text-xs font-bold uppercase">Chưa có tài khoản game nào được mua!</p>
+                container.innerHTML = `
+                    <div class="enterprise-card p-12 text-center text-slate-500">
+                        <i class="fa-solid fa-box-open text-4xl mb-3 text-slate-600"></i>
+                        <p class="text-xs font-extrabold uppercase tracking-wider">Chưa có tài khoản nào được mua!</p>
                     </div>
                 `;
                 return;
             }
 
-            listContainer.innerHTML = displayPurchases.map(p => `
+            container.innerHTML = list.map(item => `
                 <div class="enterprise-card p-6 space-y-4 border-slate-800">
-                    <div class="flex justify-between items-start flex-wrap gap-2 border-b border-slate-800 pb-3">
+                    <div class="flex justify-between items-start border-b border-slate-800 pb-3 flex-wrap gap-2">
                         <div>
-                            <span class="text-[10px] text-brand-400 font-mono font-bold block">${p.id} • Ngày mua: ${p.date}</span>
-                            <h3 class="font-extrabold text-sm text-white uppercase mt-0.5">${p.accTitle}</h3>
-                            ${isSystemAdmin ? `<span class="text-[10px] bg-brand-500/10 border border-brand-500/30 text-brand-400 px-2 py-0.5 font-bold mt-1 inline-block">Thành viên: ${p.username} (${p.userPhone})</span>` : ''}
+                            <span class="text-[10px] font-mono text-slate-500 font-bold uppercase">Mã Đơn: ${item.id} — ${item.date}</span>
+                            <h3 class="font-extrabold text-sm text-white uppercase tracking-wider mt-0.5">${item.title}</h3>
                         </div>
-                        <span class="text-sm font-black text-amber-400 font-mono">${formatCurrency(p.price)}</span>
+                        <span class="text-sm font-black text-amber-400 font-mono">${formatVND(item.price)}</span>
                     </div>
                     <div class="bg-slate-950 p-4 border border-slate-800 grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-mono">
-                        <div class="flex justify-between items-center bg-slate-900 p-2.5 border border-slate-800">
-                            <span class="text-slate-400">Tài Khoản Game:</span>
-                            <span class="text-white font-extrabold select-all">${p.accUser}</span>
+                        <div>
+                            <span class="text-slate-500 block text-[10px] uppercase font-sans">Tài khoản Game:</span>
+                            <div class="flex items-center space-x-2 mt-1">
+                                <span class="font-bold text-brand-400">${item.gameUser}</span>
+                                <button onclick="navigator.clipboard.writeText('${item.gameUser}'); showToast('Đã sao chép tài khoản!', 'info');" class="text-slate-400 hover:text-white"><i class="fa-solid fa-copy"></i></button>
+                            </div>
                         </div>
-                        <div class="flex justify-between items-center bg-slate-900 p-2.5 border border-slate-800">
-                            <span class="text-slate-400">Mật Khẩu Game:</span>
-                            <span class="text-emerald-400 font-extrabold select-all">${p.accPass}</span>
+                        <div>
+                            <span class="text-slate-500 block text-[10px] uppercase font-sans">Mật khẩu Game:</span>
+                            <div class="flex items-center space-x-2 mt-1">
+                                <span class="font-bold text-emerald-400">${item.gamePass}</span>
+                                <button onclick="navigator.clipboard.writeText('${item.gamePass}'); showToast('Đã sao chép mật khẩu!', 'info');" class="text-slate-400 hover:text-white"><i class="fa-solid fa-copy"></i></button>
+                            </div>
                         </div>
                     </div>
                 </div>
             `).join('');
         }
 
-        // ---------- DASHBOARD ADMIN ----------
-        function renderAdminDashboard() {
-            if (!state.currentUser || state.currentUser.role !== 'admin') {
-                showToast('Bạn không có quyền truy cập trang Admin!', 'error');
-                return showPage('home');
+        // TẠO MÃ VIETQR NẠP TIỀN
+        function generateVietQR() {
+            if (!appData.currentUser) {
+                showToast('Vui lòng đăng nhập để nạp tiền!', 'warning');
+                showPage('auth');
+                return;
             }
 
-            // 1. Thống kê
-            let totalRevenue = state.purchases.reduce((acc, cur) => acc + (cur.price || 0), 0);
-            let pendingDepositsCount = state.deposits.filter(d => d.status === 'pending').length;
-            let totalUserBalance = state.users.reduce((acc, cur) => acc + (cur.balance || 0), 0);
-            let availableAccsCount = state.accounts.filter(a => a.status === 'available').length;
-
-            document.getElementById('stat-revenue').innerText = formatCurrency(totalRevenue);
-            document.getElementById('stat-pending-deposits').innerText = pendingDepositsCount;
-            document.getElementById('stat-user-balance').innerText = formatCurrency(totalUserBalance);
-            document.getElementById('stat-avail-accs').innerText = availableAccsCount;
-
-            // QR Admin config select fill
-            const qrBankSel = document.getElementById('admin-qr-bank-select');
-            if (qrBankSel) {
-                qrBankSel.innerHTML = VIETNAM_BANKS.map(b => `<option value="${b.id}" ${b.id === state.config.bankId ? 'selected' : ''}>${b.name}</option>`).join('');
+            const rawVal = document.getElementById('deposit-amount-formatted').value.replace(/,/g, '');
+            const amount = parseInt(rawVal);
+            if (isNaN(amount) || amount < 10000) {
+                showToast('Số tiền nạp tối thiểu là 10,000 đ!', 'error');
+                return;
             }
-            document.getElementById('admin-qr-acc-no').value = state.config.accNo;
-            document.getElementById('admin-qr-acc-name').value = state.config.accName;
 
-            // Form Cấu hình khác
-            document.getElementById('admin-withdraw-fee-type').value = state.config.withdrawFeeType || 'fixed';
-            document.getElementById('admin-withdraw-fee-val').value = state.config.withdrawFeeVal || 5000;
-            document.getElementById('admin-qr-minutes').value = state.config.qrMinutes || 15;
-            document.getElementById('admin-qr-seconds').value = state.config.qrSeconds || 59;
-            document.getElementById('admin-bonus-percent').value = state.config.bonusPercent || 10;
-            document.getElementById('admin-cccd-setting').value = state.config.adminCccd || '038202001234';
+            const content = `NAP ${appData.currentUser.username.toUpperCase()} ${Date.now().toString().slice(-4)}`;
+            const qrUrl = `https://img.vietqr.io/image/${appData.config.qrBank}-${appData.config.qrAccNo}-compact2.png?amount=${amount}&addInfo=${encodeURIComponent(content)}&accountName=${encodeURIComponent(appData.config.qrAccName)}`;
 
-            // Server controls
-            const serverBadge = document.getElementById('server-status-badge');
-            const serverBtn = document.getElementById('btn-toggle-server');
-            if (state.config.serverOnline) {
-                serverBadge.className = 'px-3 py-1 text-xs font-extrabold bg-emerald-500/10 border border-emerald-500/30 text-emerald-400';
-                serverBadge.innerText = 'Online 24/7';
-                serverBtn.innerText = 'Tắt Server Bảo Trì';
+            document.getElementById('vietqr-img').src = qrUrl;
+            document.getElementById('qr-bank-name').textContent = appData.config.qrBank.toUpperCase();
+            document.getElementById('qr-acc-number').textContent = appData.config.qrAccNo;
+            document.getElementById('qr-acc-holder').textContent = appData.config.qrAccName;
+            document.getElementById('qr-display-amount').textContent = formatVND(amount);
+            document.getElementById('qr-display-content').textContent = content;
+
+            document.getElementById('deposit-input-box').classList.add('hidden');
+            document.getElementById('deposit-qr-box').classList.remove('hidden');
+        }
+
+        function cancelDeposit() {
+            document.getElementById('deposit-input-box').classList.remove('hidden');
+            document.getElementById('deposit-qr-box').classList.add('hidden');
+            document.getElementById('deposit-amount-formatted').value = '';
+        }
+
+        function confirmPaid() {
+            const rawVal = document.getElementById('deposit-amount-formatted').value.replace(/,/g, '');
+            const amount = parseInt(rawVal);
+            const content = document.getElementById('qr-display-content').textContent;
+
+            appData.deposits.push({
+                id: 'DEP-' + Date.now(),
+                username: appData.currentUser.username,
+                amount: amount,
+                content: content,
+                date: new Date().toLocaleString('vi-VN'),
+                status: 'pending'
+            });
+
+            saveData();
+            showToast('Lệnh nạp đã gửi thành công! Ban Quản Trị đang xác nhận.', 'success');
+            cancelDeposit();
+            showPage('user-history');
+        }
+
+        function formatCurrencyInput(el) {
+            let val = el.value.replace(/\D/g, '');
+            if (val) {
+                el.value = parseInt(val).toLocaleString('en-US');
             } else {
-                serverBadge.className = 'px-3 py-1 text-xs font-extrabold bg-red-500/10 border border-red-500/30 text-red-400';
-                serverBadge.innerText = 'Đang Bảo Trì';
-                serverBtn.innerText = 'Mở Server Hoạt Động';
+                el.value = '';
+            }
+        }
+
+        // RÚT TIỀN VỀ NGÂN HÀNG
+        function handleWithdrawSubmit(e) {
+            e.preventDefault();
+            if (!appData.currentUser) return;
+
+            const bank = document.getElementById('withdraw-bank').value;
+            const accNo = document.getElementById('withdraw-acc-no').value.trim();
+            const accName = document.getElementById('withdraw-acc-name').value.trim();
+            const amount = parseInt(document.getElementById('withdraw-amount').value.replace(/,/g, ''));
+
+            if (isNaN(amount) || amount < 50000) {
+                showToast('Số tiền rút tối thiểu là 50,000 đ!', 'error');
+                return;
             }
 
-            renderAdminCouponsTable();
-            renderAdminVerifiedList();
-            renderAdminPendingDepositsTable();
-            renderAdminPendingWithdrawsTable();
+            if (appData.currentUser.balance < amount) {
+                showToast('Số dư ví không đủ để thực hiện rút tiền!', 'error');
+                return;
+            }
+
+            // Trừ tiền ví tạm thời
+            appData.currentUser.balance -= amount;
+            const userInList = appData.users.find(u => u.username === appData.currentUser.username);
+            if (userInList) userInList.balance = appData.currentUser.balance;
+
+            appData.withdraws.push({
+                id: 'WIT-' + Date.now(),
+                username: appData.currentUser.username,
+                bank, accNo, accName, amount,
+                date: new Date().toLocaleString('vi-VN'),
+                status: 'pending'
+            });
+
+            saveData();
+            renderHeaderUI();
+            showToast('Đã gửi yêu cầu rút tiền thành công!', 'success');
+            document.getElementById('withdraw-amount').value = '';
+            renderWithdrawHistory();
+        }
+
+        function updateWithdrawFeeCalc() {
+            const rawVal = document.getElementById('withdraw-amount').value.replace(/,/g, '');
+            const amount = parseInt(rawVal) || 0;
+            let fee = 0;
+
+            if (appData.config.withdrawFeeType === 'fixed') {
+                fee = appData.config.withdrawFeeVal;
+            } else {
+                fee = amount * (appData.config.withdrawFeeVal / 100);
+            }
+
+            document.getElementById('withdraw-fee-rate-display').textContent = formatVND(fee);
+            document.getElementById('withdraw-fee-amount-display').textContent = formatVND(fee);
+            document.getElementById('withdraw-net-amount-display').textContent = formatVND(Math.max(0, amount - fee));
+        }
+
+        function renderWithdrawHistory() {
+            const container = document.getElementById('withdraw-history-table');
+            if (!appData.currentUser) return;
+
+            const list = appData.withdraws.filter(w => w.username === appData.currentUser.username);
+
+            if (list.length === 0) {
+                container.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-500">Chưa có lịch sử rút tiền nào.</td></tr>`;
+                return;
+            }
+
+            container.innerHTML = list.map(w => `
+                <tr class="hover:bg-slate-900/50 transition">
+                    <td class="p-3 uppercase font-bold text-white">${w.bank}</td>
+                    <td class="p-3 font-mono">${w.accNo} <br> <span class="text-[10px] text-slate-400 uppercase font-sans">${w.accName}</span></td>
+                    <td class="p-3 font-mono text-amber-400 font-bold">${formatVND(w.amount)}</td>
+                    <td class="p-3 text-slate-400">${w.date}</td>
+                    <td class="p-3 font-bold ${w.status === 'approved' ? 'text-emerald-400' : w.status === 'rejected' ? 'text-red-400' : 'text-amber-400'}">${w.status === 'approved' ? 'Thành công' : w.status === 'rejected' ? 'Bị từ chối' : 'Chờ duyệt'}</td>
+                </tr>
+            `).join('');
+            
+            document.getElementById('withdraw-user-balance').textContent = formatVND(appData.currentUser.balance);
+        }
+
+        // LỊCH SỬ NẠP / RÚT
+        function renderUserHistoryTabs() {
+            switchUserHistoryTab('deposits');
+        }
+
+        function switchUserHistoryTab(tab) {
+            document.getElementById('user-history-deposit-box').classList.add('hidden');
+            document.getElementById('user-history-withdraw-box').classList.add('hidden');
+
+            document.getElementById('tab-user-deposits').className = 'font-extrabold text-slate-400 pb-2 text-xs uppercase tracking-wider transition';
+            document.getElementById('tab-user-withdraws').className = 'font-extrabold text-slate-400 pb-2 text-xs uppercase tracking-wider transition';
+
+            if (tab === 'deposits') {
+                document.getElementById('user-history-deposit-box').classList.remove('hidden');
+                document.getElementById('tab-user-deposits').className = 'font-extrabold text-brand-400 border-b-2 border-brand-500 pb-2 text-xs uppercase tracking-wider transition';
+                renderUserDepositsTable();
+            } else {
+                document.getElementById('user-history-withdraw-box').classList.remove('hidden');
+                document.getElementById('tab-user-withdraws').className = 'font-extrabold text-brand-400 border-b-2 border-brand-500 pb-2 text-xs uppercase tracking-wider transition';
+                renderUserWithdrawsTable();
+            }
+        }
+
+        function renderUserDepositsTable() {
+            const container = document.getElementById('user-deposit-history-table');
+            if (!appData.currentUser) return;
+
+            const list = appData.deposits.filter(d => d.username === appData.currentUser.username);
+
+            if (list.length === 0) {
+                container.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-500">Chưa có giao dịch nạp tiền nào.</td></tr>`;
+                return;
+            }
+
+            container.innerHTML = list.map(d => `
+                <tr class="hover:bg-slate-900/50 transition">
+                    <td class="p-3 font-mono font-bold text-white">${d.id}</td>
+                    <td class="p-3 font-mono text-amber-400 font-bold">${formatVND(d.amount)}</td>
+                    <td class="p-3 font-mono text-emerald-400">+${appData.config.depositBonusPercent}%</td>
+                    <td class="p-3 text-slate-400">${d.date}</td>
+                    <td class="p-3 font-bold ${d.status === 'approved' ? 'text-emerald-400' : d.status === 'rejected' ? 'text-red-400' : 'text-amber-400'}">${d.status === 'approved' ? 'Thành công' : d.status === 'rejected' ? 'Từ chối' : 'Chờ duyệt'}</td>
+                </tr>
+            `).join('');
+        }
+
+        function renderUserWithdrawsTable() {
+            const container = document.getElementById('user-withdraw-history-table');
+            if (!appData.currentUser) return;
+
+            const list = appData.withdraws.filter(w => w.username === appData.currentUser.username);
+
+            if (list.length === 0) {
+                container.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-500">Chưa có giao dịch rút tiền nào.</td></tr>`;
+                return;
+            }
+
+            container.innerHTML = list.map(w => `
+                <tr class="hover:bg-slate-900/50 transition">
+                    <td class="p-3 font-bold uppercase text-white">${w.bank}</td>
+                    <td class="p-3 font-mono">${w.accNo}</td>
+                    <td class="p-3 font-mono text-amber-400 font-bold">${formatVND(w.amount)}</td>
+                    <td class="p-3 text-slate-400">${w.date}</td>
+                    <td class="p-3 font-bold ${w.status === 'approved' ? 'text-emerald-400' : w.status === 'rejected' ? 'text-red-400' : 'text-amber-400'}">${w.status === 'approved' ? 'Thành công' : w.status === 'rejected' ? 'Từ chối' : 'Chờ duyệt'}</td>
+                </tr>
+            `).join('');
+        }
+
+        // BẢNG QUẢN TRỊ ADMIN
+        function renderAdminDashboard() {
+            // Thống kê
+            const revenue = appData.purchases.reduce((sum, p) => sum + p.price, 0);
+            const pendingDeposits = appData.deposits.filter(d => d.status === 'pending').length;
+            const userBalance = appData.users.reduce((sum, u) => sum + u.balance, 0);
+            const availAccs = appData.accounts.filter(a => a.status === 'available').length;
+
+            document.getElementById('stat-revenue').textContent = formatVND(revenue);
+            document.getElementById('stat-pending-deposits').textContent = pendingDeposits;
+            document.getElementById('stat-user-balance').textContent = formatVND(userBalance);
+            document.getElementById('stat-avail-accs').textContent = availAccs;
+
+            // Load Cấu hình QR Admin
+            document.getElementById('admin-qr-bank-select').value = appData.config.qrBank;
+            document.getElementById('admin-qr-acc-no').value = appData.config.qrAccNo;
+            document.getElementById('admin-qr-acc-name').value = appData.config.qrAccName;
+
+            renderAdminPendingDeposits();
+            renderAdminPendingWithdraws();
             renderAdminUsersTable();
             renderAdminAccountsTable();
+            renderAdminCouponsTable();
+            renderAdminVerifiedList();
         }
 
-        // Cấu hình QR Admin
         function saveAdminQRSettingSection() {
-            state.config.bankId = document.getElementById('admin-qr-bank-select').value;
-            state.config.accNo = document.getElementById('admin-qr-acc-no').value.trim();
-            state.config.accName = document.getElementById('admin-qr-acc-name').value.trim();
-            saveState();
-            showToast('Đã lưu cấu hình VietQR của hệ thống!', 'success');
+            appData.config.qrBank = document.getElementById('admin-qr-bank-select').value;
+            appData.config.qrAccNo = document.getElementById('admin-qr-acc-no').value.trim();
+            appData.config.qrAccName = document.getElementById('admin-qr-acc-name').value.trim();
+
+            saveData();
+            showToast('Cập nhật thông tin VietQR Admin thành công!', 'success');
         }
 
-        function saveAdminWithdrawFeeConfig() {
-            state.config.withdrawFeeType = document.getElementById('admin-withdraw-fee-type').value;
-            state.config.withdrawFeeVal = parseFloat(document.getElementById('admin-withdraw-fee-val').value) || 0;
-            saveState();
-            showToast('Đã cập nhật cấu hình phí rút tiền!', 'success');
+        function renderAdminPendingDeposits() {
+            const container = document.getElementById('admin-pending-deposit-table');
+            const list = appData.deposits.filter(d => d.status === 'pending');
+
+            if (list.length === 0) {
+                container.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-500">Không có lệnh nạp nào chờ duyệt.</td></tr>`;
+                return;
+            }
+
+            container.innerHTML = list.map(d => `
+                <tr class="hover:bg-slate-900/50 transition">
+                    <td class="p-3 font-bold text-white">${d.username}</td>
+                    <td class="p-3 font-mono text-amber-400 font-bold">${formatVND(d.amount)}</td>
+                    <td class="p-3 text-slate-400 font-mono">${d.content}</td>
+                    <td class="p-3 flex space-x-2">
+                        <button onclick="approveDeposit('${d.id}')" class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 px-2.5 py-1 text-[11px] font-bold">Duyệt</button>
+                        <button onclick="rejectDeposit('${d.id}')" class="bg-red-500/20 text-red-400 border border-red-500/40 px-2.5 py-1 text-[11px] font-bold">Hủy</button>
+                    </td>
+                </tr>
+            `).join('');
         }
 
-        function saveAdminQrTimerConfig() {
-            state.config.qrMinutes = parseInt(document.getElementById('admin-qr-minutes').value) || 15;
-            state.config.qrSeconds = parseInt(document.getElementById('admin-qr-seconds').value) || 59;
-            saveState();
-            showToast('Đã lưu thời gian giữ mã VietQR!', 'success');
+        function approveDeposit(id) {
+            const dep = appData.deposits.find(d => d.id === id);
+            if (!dep) return;
+
+            dep.status = 'approved';
+            const bonus = dep.amount * (appData.config.depositBonusPercent / 100);
+            const totalAdd = dep.amount + bonus;
+
+            const user = appData.users.find(u => u.username === dep.username);
+            if (user) {
+                user.balance += totalAdd;
+                if (appData.currentUser && appData.currentUser.username === user.username) {
+                    appData.currentUser.balance = user.balance;
+                }
+            }
+
+            saveData();
+            renderAdminDashboard();
+            renderHeaderUI();
+            showToast(`Đã duyệt lệnh nạp +${formatVND(totalAdd)} cho ${dep.username}!`, 'success');
         }
 
-        function saveAdminBonusPercent() {
-            state.config.bonusPercent = parseFloat(document.getElementById('admin-bonus-percent').value) || 0;
-            saveState();
-            showToast('Đã lưu tỷ lệ % thưởng khi nạp tiền!', 'success');
+        function rejectDeposit(id) {
+            const dep = appData.deposits.find(d => d.id === id);
+            if (!dep) return;
+
+            dep.status = 'rejected';
+            saveData();
+            renderAdminDashboard();
+            showToast(`Đã từ chối lệnh nạp của ${dep.username}!`, 'info');
         }
 
-        function saveAdminCCCD() {
-            const val = document.getElementById('admin-cccd-setting').value.trim();
-            if (val.length !== 12) return showToast('CCCD Admin phải đúng 12 số!', 'error');
-            state.config.adminCccd = val;
-            saveState();
-            showToast('Đã cập nhật mã CCCD khôi phục mật khẩu Admin!', 'success');
+        function renderAdminPendingWithdraws() {
+            const container = document.getElementById('admin-pending-withdraw-table');
+            const list = appData.withdraws.filter(w => w.status === 'pending');
+
+            if (list.length === 0) {
+                container.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-slate-500">Không có lệnh rút nào chờ duyệt.</td></tr>`;
+                return;
+            }
+
+            container.innerHTML = list.map(w => `
+                <tr class="hover:bg-slate-900/50 transition">
+                    <td class="p-3 font-bold text-white">${w.username} <br> <span class="text-[10px] text-slate-400 font-mono">${w.bank} - ${w.accNo}</span></td>
+                    <td class="p-3 font-mono text-amber-400 font-bold">${formatVND(w.amount)}</td>
+                    <td class="p-3 flex space-x-2">
+                        <button onclick="approveWithdraw('${w.id}')" class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 px-2.5 py-1 text-[11px] font-bold">Duyệt</button>
+                        <button onclick="rejectWithdraw('${w.id}')" class="bg-red-500/20 text-red-400 border border-red-500/40 px-2.5 py-1 text-[11px] font-bold">Hủy</button>
+                    </td>
+                </tr>
+            `).join('');
         }
 
-        // Quản lý Mã Giảm Giá
+        function approveWithdraw(id) {
+            const wit = appData.withdraws.find(w => w.id === id);
+            if (!wit) return;
+
+            wit.status = 'approved';
+            saveData();
+            renderAdminDashboard();
+            showToast(`Đã duyệt chuyển khoản ${formatVND(wit.amount)} cho ${wit.username}!`, 'success');
+        }
+
+        function rejectWithdraw(id) {
+            const wit = appData.withdraws.find(w => w.id === id);
+            if (!wit) return;
+
+            wit.status = 'rejected';
+            // Hoàn lại tiền cho user
+            const user = appData.users.find(u => u.username === wit.username);
+            if (user) {
+                user.balance += wit.amount;
+                if (appData.currentUser && appData.currentUser.username === user.username) {
+                    appData.currentUser.balance = user.balance;
+                }
+            }
+
+            saveData();
+            renderAdminDashboard();
+            renderHeaderUI();
+            showToast(`Đã từ chối lệnh rút và hoàn lại ${formatVND(wit.amount)} cho ${wit.username}!`, 'info');
+        }
+
+        function renderAdminUsersTable() {
+            const container = document.getElementById('admin-users-table');
+            container.innerHTML = appData.users.map(u => `
+                <tr class="hover:bg-slate-900/50 transition">
+                    <td class="p-3 font-bold text-white">${u.username} <br><span class="text-[10px] text-slate-400 font-mono">${u.phone}</span></td>
+                    <td class="p-3 font-mono text-slate-400">${u.password}</td>
+                    <td class="p-3 font-mono text-amber-400 font-bold">${formatVND(u.balance)}</td>
+                    <td class="p-3"><span class="px-2 py-0.5 text-[9px] font-extrabold uppercase ${u.role === 'admin' ? 'bg-brand-500/20 text-brand-400' : 'bg-slate-800 text-slate-300'}">${u.role}</span></td>
+                    <td class="p-3">
+                        <button onclick="openEditUserModal('${u.phone}')" class="text-brand-400 hover:text-white text-xs font-bold"><i class="fa-solid fa-pen-to-square"></i> Sửa</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function renderAdminAccountsTable() {
+            const container = document.getElementById('admin-accounts-table');
+            const searchKw = (document.getElementById('admin-acc-search-input')?.value || '').toLowerCase().trim();
+
+            let list = appData.accounts;
+            if (searchKw) {
+                list = list.filter(a => a.title.toLowerCase().includes(searchKw) || a.id.toLowerCase().includes(searchKw));
+            }
+
+            container.innerHTML = list.map(a => `
+                <tr class="hover:bg-slate-900/50 transition">
+                    <td class="p-3 font-mono font-bold text-white">${a.id}</td>
+                    <td class="p-3 font-bold text-white truncate max-w-[200px]">${a.title}</td>
+                    <td class="p-3 font-mono text-amber-400 font-bold">${formatVND(a.price)}</td>
+                    <td class="p-3 font-mono text-emerald-400">${a.discount || 0}%</td>
+                    <td class="p-3"><span class="px-2 py-0.5 text-[9px] font-extrabold uppercase ${a.status === 'available' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'}">${a.status}</span></td>
+                    <td class="p-3 flex space-x-2">
+                        <button onclick="openEditAccModal('${a.id}')" class="text-brand-400 hover:text-white"><i class="fa-solid fa-pen-to-square"></i></button>
+                        <button onclick="deleteAccount('${a.id}')" class="text-red-400 hover:text-white"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function deleteAccount(id) {
+            if (confirm('Bạn có chắc chắn muốn xóa tài khoản này khỏi kho?')) {
+                appData.accounts = appData.accounts.filter(a => a.id !== id);
+                saveData();
+                renderAdminDashboard();
+                renderAccountsGrid();
+                showToast('Đã xóa tài khoản thành công!', 'info');
+            }
+        }
+
+        function renderAdminCouponsTable() {
+            const container = document.getElementById('admin-coupons-table');
+            container.innerHTML = appData.coupons.map(c => `
+                <tr class="hover:bg-slate-900/50 transition">
+                    <td class="p-3 font-mono font-bold text-white">${c.code}</td>
+                    <td class="p-3 font-mono text-emerald-400 font-bold">${c.percent}%</td>
+                    <td class="p-3 font-mono text-slate-300">Còn ${c.quantity} lượt</td>
+                    <td class="p-3">
+                        <button onclick="deleteCoupon('${c.code}')" class="text-red-400 hover:text-white"><i class="fa-solid fa-trash"></i> Khoá</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
         function handleAdminCreateCoupon(e) {
             e.preventDefault();
             const code = document.getElementById('new-coupon-code').value.trim().toUpperCase();
             const percent = parseInt(document.getElementById('new-coupon-percent').value);
             const quantity = parseInt(document.getElementById('new-coupon-quantity').value);
 
-            if (state.coupons.some(c => c.code === code)) return showToast('Mã ưu đãi này đã tồn tại!', 'error');
-
-            state.coupons.push({ code, percent, quantity, used: 0, expired: false });
-            saveState();
-            renderAdminCouponsTable();
-            showToast('Đã khởi tạo mã ưu đãi giảm giá mới!', 'success');
-        }
-
-        function renderAdminCouponsTable() {
-            const table = document.getElementById('admin-coupons-table');
-            if (!table) return;
-
-            table.innerHTML = state.coupons.map(c => `
-                <tr class="hover:bg-slate-900/50">
-                    <td class="p-3 font-mono font-bold text-brand-400">${c.code}</td>
-                    <td class="p-3 font-mono text-emerald-400 font-bold">${c.percent}%</td>
-                    <td class="p-3 font-bold">
-                        ${c.expired || c.used >= c.quantity ? '<span class="text-red-400 bg-red-500/10 border border-red-500/30 px-2 py-0.5 text-[10px] uppercase">HẾT HẠN</span>' : `<span class="text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 text-[10px] uppercase">Khả dụng (${c.used}/${c.quantity})</span>`}
-                    </td>
-                    <td class="p-3">
-                        <button onclick="deleteCoupon('${c.code}')" class="text-red-400 hover:text-red-300 font-bold"><i class="fa-solid fa-trash"></i></button>
-                    </td>
-                </tr>
-            `).join('');
+            appData.coupons.push({ code, percent, quantity, status: 'active' });
+            saveData();
+            renderAdminDashboard();
+            showToast('Tạo mã giảm giá mới thành công!', 'success');
         }
 
         function deleteCoupon(code) {
-            state.coupons = state.coupons.filter(c => c.code !== code);
-            saveState();
-            renderAdminCouponsTable();
-            showToast('Đã xóa mã giảm giá', 'info');
+            appData.coupons = appData.coupons.filter(c => c.code !== code);
+            saveData();
+            renderAdminDashboard();
+            showToast('Đã xoá mã giảm giá!', 'info');
         }
 
-        // Duyệt Nạp / Rút
-        function renderAdminPendingDepositsTable() {
-            const table = document.getElementById('admin-pending-deposit-table');
-            const pending = state.deposits.filter(d => d.status === 'pending');
+        function renderAdminVerifiedList() {
+            const container = document.getElementById('admin-verified-list-table');
+            container.innerHTML = appData.verifiedList.map((v, idx) => `
+                <tr class="hover:bg-slate-900/50 transition">
+                    <td class="p-3 font-mono text-slate-400">${idx + 1}</td>
+                    <td class="p-3 font-mono font-bold text-white">${v.phone}</td>
+                    <td class="p-3 font-mono text-brand-400 font-bold">${v.cccd}</td>
+                    <td class="p-3"><button onclick="deleteVerifiedInfo('${v.phone}')" class="text-red-400 hover:text-white"><i class="fa-solid fa-trash"></i></button></td>
+                </tr>
+            `).join('');
+        }
 
-            if (pending.length === 0) {
-                table.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-500">Không có lệnh nạp chờ duyệt</td></tr>`;
+        function handleAdminAddVerifiedInfo() {
+            const phone = document.getElementById('admin-verify-phone').value.trim();
+            const cccd = document.getElementById('admin-verify-cccd').value.trim();
+
+            if (phone.length !== 10 || cccd.length !== 12) {
+                showToast('SĐT phải đủ 10 số và CCCD phải đủ 12 số!', 'error');
                 return;
             }
 
-            table.innerHTML = pending.map(d => `
-                <tr class="hover:bg-slate-900/50">
-                    <td class="p-3 font-bold text-white">${d.username} <br><span class="text-[10px] text-slate-400 font-mono">${d.userPhone}</span></td>
-                    <td class="p-3 font-mono font-bold text-emerald-400">${formatCurrency(d.amount)}</td>
-                    <td class="p-3 text-[10px] text-slate-300 font-mono max-w-[120px] truncate">${d.content}</td>
-                    <td class="p-3 space-x-1.5">
-                        <button onclick="openDepositNoteModal('${d.id}', 'approve')" class="bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold px-2.5 py-1 text-[10px] uppercase">Duyệt</button>
-                        <button onclick="openDepositNoteModal('${d.id}', 'reject')" class="bg-red-500/20 hover:bg-red-500 text-red-400 hover:text-white font-extrabold px-2.5 py-1 text-[10px] uppercase border border-red-500/40">Từ Chối</button>
-                    </td>
-                </tr>
-            `).join('');
-        }
-
-        function openDepositNoteModal(id, action) {
-            document.getElementById('modal-deposit-id').value = id;
-            document.getElementById('modal-deposit-action').value = action;
-            document.getElementById('deposit-note-modal').classList.remove('hidden');
-        }
-
-        function closeDepositNoteModal() {
-            document.getElementById('deposit-note-modal').classList.add('hidden');
-        }
-
-        function submitDepositActionWithNote() {
-            const id = document.getElementById('modal-deposit-id').value;
-            const action = document.getElementById('modal-deposit-action').value;
-            const note = document.getElementById('modal-deposit-note-input').value;
-
-            const depIdx = state.deposits.findIndex(d => d.id === id);
-            if (depIdx === -1) return;
-
-            const deposit = state.deposits[depIdx];
-            if (action === 'approve') {
-                deposit.status = 'approved';
-                deposit.note = note;
-
-                // Cộng tiền cho user
-                const bonus = deposit.amount * ((deposit.bonusPercent || 0) / 100);
-                const totalAdd = deposit.amount + bonus;
-
-                const userIdx = state.users.findIndex(u => u.phone === deposit.userPhone);
-                if (userIdx !== -1) {
-                    state.users[userIdx].balance = (state.users[userIdx].balance || 0) + totalAdd;
-                    if (state.currentUser && state.currentUser.phone === deposit.userPhone) {
-                        state.currentUser.balance = state.users[userIdx].balance;
-                    }
-                }
-                showToast('Đã duyệt lệnh nạp và cộng tiền thành công!', 'success');
-            } else {
-                deposit.status = 'rejected';
-                deposit.note = note;
-                showToast('Đã từ chối lệnh nạp tiền!', 'info');
-            }
-
-            saveState();
-            closeDepositNoteModal();
+            appData.verifiedList.push({ phone, cccd });
+            saveData();
             renderAdminDashboard();
-            updateNavHeader();
+            showToast('Thêm thông tin xác minh thành công!', 'success');
         }
 
-        function renderAdminPendingWithdrawsTable() {
-            const table = document.getElementById('admin-pending-withdraw-table');
-            const pending = state.withdraws.filter(w => w.status === 'pending');
-
-            if (pending.length === 0) {
-                table.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-slate-500">Không có lệnh rút chờ duyệt</td></tr>`;
-                return;
-            }
-
-            table.innerHTML = pending.map(w => `
-                <tr class="hover:bg-slate-900/50">
-                    <td class="p-3 font-bold text-white">${w.username} <br><span class="text-[10px] text-brand-400 font-mono">${w.bank} - ${w.accNo} (${w.accName})</span></td>
-                    <td class="p-3 font-mono font-bold text-amber-400">${formatCurrency(w.amount)}</td>
-                    <td class="p-3 space-x-1.5">
-                        <button onclick="openWithdrawNoteModal('${w.id}', 'approve')" class="bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold px-2.5 py-1 text-[10px] uppercase">Chuyển Tiền</button>
-                        <button onclick="openWithdrawNoteModal('${w.id}', 'reject')" class="bg-red-500/20 hover:bg-red-500 text-red-400 hover:text-white font-extrabold px-2.5 py-1 text-[10px] uppercase border border-red-500/40">Từ Chối</button>
-                    </td>
-                </tr>
-            `).join('');
-        }
-
-        function openWithdrawNoteModal(id, action) {
-            document.getElementById('modal-withdraw-id').value = id;
-            document.getElementById('modal-withdraw-action').value = action;
-            document.getElementById('withdraw-note-modal').classList.remove('hidden');
-        }
-
-        function closeWithdrawNoteModal() {
-            document.getElementById('withdraw-note-modal').classList.add('hidden');
-        }
-
-        function submitWithdrawActionWithNote() {
-            const id = document.getElementById('modal-withdraw-id').value;
-            const action = document.getElementById('modal-withdraw-action').value;
-            const note = document.getElementById('modal-withdraw-note-input').value;
-
-            const wIdx = state.withdraws.findIndex(w => w.id === id);
-            if (wIdx === -1) return;
-
-            const withdraw = state.withdraws[wIdx];
-            if (action === 'approve') {
-                withdraw.status = 'approved';
-                withdraw.note = note;
-                showToast('Đã duyệt thành công lệnh rút tiền!', 'success');
-            } else {
-                withdraw.status = 'rejected';
-                withdraw.note = note;
-
-                // Hoàn lại tiền cho user
-                const userIdx = state.users.findIndex(u => u.phone === withdraw.userPhone);
-                if (userIdx !== -1) {
-                    state.users[userIdx].balance = (state.users[userIdx].balance || 0) + withdraw.amount;
-                    if (state.currentUser && state.currentUser.phone === withdraw.userPhone) {
-                        state.currentUser.balance = state.users[userIdx].balance;
-                    }
-                }
-                showToast('Đã hoàn lại tiền cho thành viên do từ chối rút!', 'info');
-            }
-
-            saveState();
-            closeWithdrawNoteModal();
+        function deleteVerifiedInfo(phone) {
+            appData.verifiedList = appData.verifiedList.filter(v => v.phone !== phone);
+            saveData();
             renderAdminDashboard();
-            updateNavHeader();
+            showToast('Đã xoá thông tin xác minh!', 'info');
         }
 
-        // Quản lý Thành Viên
-        function renderAdminUsersTable() {
-            const table = document.getElementById('admin-users-table');
-            if (!table) return;
+        // TẠO ACC HÀNG LOẠT VÀ SỬA ACC
+        function switchAccTab(tab) {
+            document.getElementById('form-acc-single-box').classList.add('hidden');
+            document.getElementById('form-acc-bulk-box').classList.add('hidden');
+            document.getElementById('form-acc-delete-batch-box').classList.add('hidden');
 
-            table.innerHTML = state.users.map(u => `
-                <tr class="hover:bg-slate-900/50">
-                    <td class="p-3 font-bold text-white">${u.username} <br><span class="text-[10px] text-slate-400 font-mono">${u.phone}</span></td>
-                    <td class="p-3 font-mono text-slate-400 text-[11px]">${u.password}</td>
-                    <td class="p-3 font-mono font-bold text-amber-400">${formatCurrency(u.balance)}</td>
-                    <td class="p-3">${u.role === 'admin' ? '<span class="text-red-400 font-bold uppercase text-[10px]">ADMIN</span>' : '<span class="text-slate-400 uppercase text-[10px]">User</span>'}</td>
-                    <td class="p-3 space-x-2">
-                        <button onclick="openEditUserModal('${u.phone}')" class="text-brand-400 hover:text-brand-300 font-bold"><i class="fa-solid fa-pen-to-square"></i></button>
-                        <button onclick="deleteUser('${u.phone}')" class="text-red-400 hover:text-red-300 font-bold"><i class="fa-solid fa-trash"></i></button>
-                    </td>
-                </tr>
-            `).join('');
+            if (tab === 'single') document.getElementById('form-acc-single-box').classList.remove('hidden');
+            if (tab === 'bulk') document.getElementById('form-acc-bulk-box').classList.remove('hidden');
+            if (tab === 'delete-batch') document.getElementById('form-acc-delete-batch-box').classList.remove('hidden');
         }
 
+        function handleAdminSaveAcc(e) {
+            e.preventDefault();
+            const title = document.getElementById('acc-title').value.trim();
+            const rank = document.getElementById('acc-rank').value.trim();
+            const price = parseInt(document.getElementById('acc-price').value);
+            const discount = parseInt(document.getElementById('acc-discount').value) || 0;
+            const user = document.getElementById('acc-user').value.trim();
+            const pass = document.getElementById('acc-pass').value.trim();
+
+            const newAcc = {
+                id: 'ACC-' + Math.floor(1000 + Math.random() * 9000),
+                title, rank, price, discount, user, pass,
+                images: appData.uploadedImages.length > 0 ? [...appData.uploadedImages] : ['https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=600&q=80'],
+                status: 'available'
+            };
+
+            appData.accounts.unshift(newAcc);
+            appData.uploadedImages = [];
+            document.getElementById('uploaded-images-preview').innerHTML = '';
+            saveData();
+            renderAdminDashboard();
+            renderAccountsGrid();
+            showToast('Thêm tài khoản vào kho thành công!', 'success');
+        }
+
+        function handleAutoGenerateBulkAccounts() {
+            const qty = parseInt(document.getElementById('bulk-quantity').value) || 5;
+            const ranks = ['Sắt', 'Đồng', 'Bạc', 'Vàng', 'Bạch Kim', 'Lục Bảo', 'Kim Cương', 'Cao Thủ'];
+
+            for (let i = 0; i < qty; i++) {
+                const randomRank = ranks[Math.floor(Math.random() * ranks.length)];
+                appData.accounts.unshift({
+                    id: 'ACC-AUTO-' + Math.floor(10000 + Math.random() * 90000),
+                    title: `Acc ${randomRank} Kho Tự Động Full Thông Tin Chuẩn 100%`,
+                    rank: randomRank,
+                    price: Math.floor(Math.random() * 15 + 1) * 100000,
+                    discount: Math.floor(Math.random() * 4) * 5,
+                    user: 'riot_user_' + Math.floor(Math.random() * 9999),
+                    pass: 'pvh_pass_' + Math.floor(Math.random() * 9999),
+                    images: ['https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=600&q=80'],
+                    status: 'available'
+                });
+            }
+
+            saveData();
+            renderAdminDashboard();
+            renderAccountsGrid();
+            showToast(`Đã tự động khởi tạo ${qty} tài khoản vào kho!`, 'success');
+        }
+
+        function handleDeleteAllAccounts() {
+            if (confirm('CẢNH BÁO: Hành động này sẽ xóa TOÀN BỘ tài khoản game trong kho! Bạn có chắc không?')) {
+                appData.accounts = [];
+                saveData();
+                renderAdminDashboard();
+                renderAccountsGrid();
+                showToast('Đã làm sạch kho tài khoản!', 'info');
+            }
+        }
+
+        // XỬ LÝ SỬA USER MODAL
         function openEditUserModal(phone) {
-            const u = state.users.find(user => user.phone === phone);
-            if (!u) return;
+            const user = appData.users.find(u => u.phone === phone);
+            if (!user) return;
 
-            document.getElementById('edit-user-original-phone').value = u.phone;
-            document.getElementById('modal-edit-username').value = u.username;
-            document.getElementById('modal-edit-password').value = u.password;
-            document.getElementById('modal-edit-balance').value = u.balance;
+            document.getElementById('edit-user-original-phone').value = user.phone;
+            document.getElementById('modal-edit-username').value = user.username;
+            document.getElementById('modal-edit-password').value = user.password;
+            document.getElementById('modal-edit-balance').value = user.balance;
 
             document.getElementById('edit-user-modal').classList.remove('hidden');
         }
@@ -2705,185 +2537,35 @@
         function saveUserEditModal(e) {
             e.preventDefault();
             const origPhone = document.getElementById('edit-user-original-phone').value;
-            const uIdx = state.users.findIndex(u => u.phone === origPhone);
-            if (uIdx === -1) return;
+            const user = appData.users.find(u => u.phone === origPhone);
 
-            state.users[uIdx].username = document.getElementById('modal-edit-username').value.trim();
-            state.users[uIdx].password = document.getElementById('modal-edit-password').value.trim();
-            state.users[uIdx].balance = parseFloat(document.getElementById('modal-edit-balance').value) || 0;
+            if (user) {
+                user.username = document.getElementById('modal-edit-username').value.trim();
+                user.password = document.getElementById('modal-edit-password').value.trim();
+                user.balance = parseInt(document.getElementById('modal-edit-balance').value) || 0;
 
-            if (state.currentUser && state.currentUser.phone === origPhone) {
-                state.currentUser.username = state.users[uIdx].username;
-                state.currentUser.password = state.users[uIdx].password;
-                state.currentUser.balance = state.users[uIdx].balance;
-            }
+                if (appData.currentUser && appData.currentUser.phone === user.phone) {
+                    appData.currentUser = user;
+                }
 
-            saveState();
-            closeEditUserModal();
-            renderAdminDashboard();
-            updateNavHeader();
-            showToast('Đã cập nhật thông tin người dùng!', 'success');
-        }
-
-        function deleteUser(phone) {
-            if (confirm('Bạn có chắc chắn muốn xóa thành viên này?')) {
-                state.users = state.users.filter(u => u.phone !== phone);
-                saveState();
+                saveData();
                 renderAdminDashboard();
-                showToast('Đã xóa thành viên', 'info');
+                renderHeaderUI();
+                closeEditUserModal();
+                showToast('Cập nhật người dùng thành công!', 'success');
             }
         }
 
-        // Quản lý Kho Acc Admin
-        function switchAccTab(tab) {
-            const single = document.getElementById('form-acc-single-box');
-            const bulk = document.getElementById('form-acc-bulk-box');
-            const delBatch = document.getElementById('form-acc-delete-batch-box');
-
-            const tSingle = document.getElementById('tab-acc-single');
-            const tBulk = document.getElementById('tab-acc-bulk');
-            const tDel = document.getElementById('tab-acc-delete-batch');
-
-            single.classList.add('hidden');
-            bulk.classList.add('hidden');
-            delBatch.classList.add('hidden');
-
-            tSingle.className = 'font-extrabold text-slate-400 pb-2 text-xs uppercase tracking-wider mr-4';
-            tBulk.className = 'font-extrabold text-slate-400 pb-2 text-xs uppercase tracking-wider mr-4';
-            tDel.className = 'font-extrabold text-slate-400 pb-2 text-xs uppercase tracking-wider mr-4';
-
-            if (tab === 'single') {
-                single.classList.remove('hidden');
-                tSingle.className = 'font-extrabold text-brand-400 border-b-2 border-brand-500 pb-2 text-xs uppercase tracking-wider mr-4';
-            } else if (tab === 'bulk') {
-                bulk.classList.remove('hidden');
-                tBulk.className = 'font-extrabold text-brand-400 border-b-2 border-brand-500 pb-2 text-xs uppercase tracking-wider mr-4';
-            } else {
-                delBatch.classList.remove('hidden');
-                tDel.className = 'font-extrabold text-brand-400 border-b-2 border-brand-500 pb-2 text-xs uppercase tracking-wider mr-4';
-            }
-        }
-
-        function handleImageUpload(e) {
-            const files = e.target.files;
-            const preview = document.getElementById('uploaded-images-preview');
-            preview.innerHTML = '';
-            tempImages = [];
-
-            for (let i = 0; i < files.length; i++) {
-                const reader = new FileReader();
-                reader.onload = function (event) {
-                    tempImages.push(event.target.result);
-                    preview.innerHTML += `<img src="${event.target.result}" class="w-12 h-12 object-cover border border-slate-700">`;
-                };
-                reader.readAsDataURL(files[i]);
-            }
-        }
-
-        function handleAdminSaveAcc(e) {
-            e.preventDefault();
-            const title = document.getElementById('acc-title').value.trim();
-            const rank = document.getElementById('acc-rank').value.trim();
-            const price = parseFloat(document.getElementById('acc-price').value) || 0;
-            const discount = parseFloat(document.getElementById('acc-discount').value) || 0;
-            const user = document.getElementById('acc-user').value.trim();
-            const pass = document.getElementById('acc-pass').value.trim();
-
-            const newAcc = {
-                id: 'ACC-' + Math.floor(1000 + Math.random() * 9000),
-                title,
-                rank,
-                price,
-                discountPercent: discount,
-                images: tempImages.length > 0 ? tempImages : ['https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800&auto=format&fit=crop'],
-                user,
-                pass,
-                status: 'available'
-            };
-
-            state.accounts.push(newAcc);
-            saveState();
-
-            document.getElementById('form-acc-single-box').reset();
-            document.getElementById('uploaded-images-preview').innerHTML = '';
-            tempImages = [];
-
-            renderAdminDashboard();
-            showToast('Đã lưu tài khoản mới vào kho!', 'success');
-        }
-
-        function handleAutoGenerateBulkAccounts() {
-            const qty = parseInt(document.getElementById('bulk-quantity').value) || 10;
-            const ranks = ['Sắt', 'Đồng', 'Bạc', 'Vàng', 'Bạch Kim', 'Lục Bảo', 'Kim Cương', 'Cao Thủ'];
-
-            for (let i = 0; i < qty; i++) {
-                const randomRank = ranks[Math.floor(Math.random() * ranks.length)];
-                const randomPrice = (Math.floor(Math.random() * 20) + 1) * 50000;
-                const id = 'ACC-' + Math.floor(10000 + Math.random() * 90000);
-
-                state.accounts.push({
-                    id,
-                    title: `Acc LMHT Rank ${randomRank} - Tự Động Khởi Tạo Kho Hệ Thống #${id}`,
-                    rank: randomRank,
-                    price: randomPrice,
-                    discountPercent: Math.floor(Math.random() * 2) * 10,
-                    images: ['https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800&auto=format&fit=crop'],
-                    user: `auto_gen_${id.toLowerCase()}`,
-                    pass: `pass_${Math.floor(Math.random()*100000)}`,
-                    status: 'available'
-                });
-            }
-
-            saveState();
-            renderAdminDashboard();
-            showToast(`Khởi tạo thành công ${qty} acc ngẫu nhiên vào kho!`, 'success');
-        }
-
-        function handleDeleteAllAccounts() {
-            if (confirm('XÁC NHẬN: Bạn muốn xoá TẤT CẢ kho tài khoản game?')) {
-                state.accounts = [];
-                saveState();
-                renderAdminDashboard();
-                showToast('Đã xóa toàn bộ kho tài khoản!', 'info');
-            }
-        }
-
-        function renderAdminAccountsTable() {
-            const table = document.getElementById('admin-accounts-table');
-            if (!table) return;
-
-            const kw = (document.getElementById('admin-acc-search-input')?.value || '').toLowerCase();
-            let list = state.accounts;
-
-            if (kw) list = list.filter(a => a.title.toLowerCase().includes(kw) || a.id.toLowerCase().includes(kw));
-
-            table.innerHTML = list.map(a => {
-                const img = (a.images && a.images.length > 0) ? a.images[0] : '';
-                return `
-                    <tr class="hover:bg-slate-900/50">
-                        <td class="p-3 font-mono font-bold text-brand-400">${a.id}</td>
-                        <td class="p-3 font-bold text-white max-w-[200px] truncate">${a.title}</td>
-                        <td class="p-3 font-mono font-bold text-amber-400">${formatCurrency(a.price)}</td>
-                        <td class="p-3 font-mono text-emerald-400">${a.discountPercent || 0}%</td>
-                        <td class="p-3"><img src="${img}" class="w-8 h-8 object-cover border border-slate-700"></td>
-                        <td class="p-3 space-x-2">
-                            <button onclick="openEditAccModal('${a.id}')" class="text-brand-400 hover:text-brand-300 font-bold"><i class="fa-solid fa-pen-to-square"></i></button>
-                            <button onclick="deleteAccount('${a.id}')" class="text-red-400 hover:text-red-300 font-bold"><i class="fa-solid fa-trash"></i></button>
-                        </td>
-                    </tr>
-                `;
-            }).join('');
-        }
-
+        // XỬ LÝ SỬA ACC MODAL
         function openEditAccModal(id) {
-            const acc = state.accounts.find(a => a.id === id);
+            const acc = appData.accounts.find(a => a.id === id);
             if (!acc) return;
 
             document.getElementById('edit-acc-id').value = acc.id;
             document.getElementById('modal-edit-acc-price').value = acc.price;
-            document.getElementById('modal-edit-acc-sale').value = acc.discountPercent || 0;
-            calculateModalDiscountAmount();
+            document.getElementById('modal-edit-acc-sale').value = acc.discount || 0;
 
+            calculateModalDiscountAmount();
             document.getElementById('edit-acc-modal').classList.remove('hidden');
         }
 
@@ -2892,139 +2574,52 @@
         }
 
         function calculateModalDiscountAmount() {
-            const price = parseFloat(document.getElementById('modal-edit-acc-price').value) || 0;
-            const sale = parseFloat(document.getElementById('modal-edit-acc-sale').value) || 0;
-            const disc = price * (sale / 100);
-            document.getElementById('modal-edit-acc-discount-amount').value = formatCurrency(disc);
+            const price = parseInt(document.getElementById('modal-edit-acc-price').value) || 0;
+            const sale = parseInt(document.getElementById('modal-edit-acc-sale').value) || 0;
+            const discAmt = price * (sale / 100);
+            document.getElementById('modal-edit-acc-discount-amount').value = formatVND(discAmt);
         }
 
         function saveAccEditModal(e) {
             e.preventDefault();
             const id = document.getElementById('edit-acc-id').value;
-            const accIdx = state.accounts.findIndex(a => a.id === id);
-            if (accIdx === -1) return;
+            const acc = appData.accounts.find(a => a.id === id);
 
-            state.accounts[accIdx].price = parseFloat(document.getElementById('modal-edit-acc-price').value) || 0;
-            state.accounts[accIdx].discountPercent = parseFloat(document.getElementById('modal-edit-acc-sale').value) || 0;
+            if (acc) {
+                acc.price = parseInt(document.getElementById('modal-edit-acc-price').value) || 0;
+                acc.discount = parseInt(document.getElementById('modal-edit-acc-sale').value) || 0;
 
-            saveState();
-            closeEditAccModal();
-            renderAdminDashboard();
-            showToast('Đã cập nhật thông tin giá bán acc!', 'success');
-        }
-
-        function deleteAccount(id) {
-            state.accounts = state.accounts.filter(a => a.id !== id);
-            saveState();
-            renderAdminDashboard();
-            showToast('Đã xóa acc khỏi hệ thống', 'info');
-        }
-
-        // Danh Sách Đã Xác Minh
-        function handleAdminAddVerifiedInfo() {
-            const phone = document.getElementById('admin-verify-phone').value.trim();
-            const cccd = document.getElementById('admin-verify-cccd').value.trim();
-
-            if (phone.length !== 10) return showToast('SĐT phải đủ 10 số!', 'error');
-            if (cccd.length !== 12) return showToast('CCCD phải đủ 12 số!', 'error');
-
-            state.verifiedList.push({ phone, cccd, date: new Date().toLocaleDateString('vi-VN') });
-            saveState();
-            renderAdminVerifiedList();
-            showToast('Thêm xác minh thành công!', 'success');
-        }
-
-        function renderAdminVerifiedList() {
-            const table = document.getElementById('admin-verified-list-table');
-            if (!table) return;
-
-            table.innerHTML = state.verifiedList.map((v, idx) => `
-                <tr class="hover:bg-slate-900/50">
-                    <td class="p-3 font-mono">${idx + 1}</td>
-                    <td class="p-3 font-mono text-brand-400 font-bold">${v.phone}</td>
-                    <td class="p-3 font-mono text-slate-300">${v.cccd}</td>
-                    <td class="p-3">
-                        <button onclick="removeVerifiedInfo('${v.phone}')" class="text-red-400 hover:text-red-300 font-bold"><i class="fa-solid fa-trash"></i></button>
-                    </td>
-                </tr>
-            `).join('');
-        }
-
-        function removeVerifiedInfo(phone) {
-            state.verifiedList = state.verifiedList.filter(v => v.phone !== phone);
-            saveState();
-            renderAdminVerifiedList();
-            showToast('Đã xóa xác minh', 'info');
-        }
-
-        // Server Status & Reset
-        function toggleServerStatus() {
-            state.config.serverOnline = !state.config.serverOnline;
-            state.config.serverReason = document.getElementById('server-close-reason').value.trim() || 'Hệ thống đang bảo trì định kỳ';
-            saveState();
-            renderAdminDashboard();
-            showToast('Đã chuyển đổi trạng thái máy chủ!', 'success');
-        }
-
-        function resetFullSystemData() {
-            if (confirm('CẢNH BÁO NGHÊU HIỂM: Bạn có chắc chắn muốn RESET TOÀN BỘ DỮ LIỆU HỆ THỐNG về mặc định?')) {
-                localStorage.clear();
-                location.reload();
+                saveData();
+                renderAdminDashboard();
+                renderAccountsGrid();
+                closeEditAccModal();
+                showToast('Đã cập nhật thông tin giá tài khoản!', 'success');
             }
         }
 
-        // Export Báo cáo
-        function exportReportTxt() {
-            let txt = `=== BÁO CÁO PVH STORE ===\n`;
-            txt += `Thời gian: ${new Date().toLocaleString('vi-VN')}\n`;
-            txt += `Tổng doanh thu: ${document.getElementById('stat-revenue').innerText}\n`;
-            txt += `Tổng số acc khả dụng: ${state.accounts.filter(a => a.status === 'available').length}\n`;
-            
-            const blob = new Blob([txt], { type: 'text/plain;charset=utf-8' });
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = `BaoCao_PVHStore_${Date.now()}.txt`;
-            a.click();
-        }
+        // UP ẢNH PREVIEW
+        function handleImageUpload(e) {
+            const files = Array.from(e.target.files);
+            appData.uploadedImages = [];
+            const preview = document.getElementById('uploaded-images-preview');
+            preview.innerHTML = '';
 
-        function exportReportPdf() {
-            showToast('Đang tạo báo cáo PDF...', 'info');
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            doc.text("BAO CAO DOANH THU PVH STORE", 10, 10);
-            doc.text(`Ngay xuat: ${new Date().toLocaleString('vi-VN')}`, 10, 20);
-            doc.save(`BaoCao_PVHStore_${Date.now()}.pdf`);
-        }
-
-        function exportToExcel() {
-            const ws = XLSX.utils.json_to_sheet(state.purchases);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "LichSuMua");
-            XLSX.writeFile(wb, `PVHStore_Purchases_${Date.now()}.xlsx`);
-        }
-
-        function exportCouponsExcel() {
-            const ws = XLSX.utils.json_to_sheet(state.coupons);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "MaGiamGia");
-            XLSX.writeFile(wb, `PVHStore_Coupons_${Date.now()}.xlsx`);
-        }
-
-        function exportCouponsTxt() {
-            let txt = "DANH SÁCH MÃ GIẢM GIÁ PVH STORE\n\n";
-            state.coupons.forEach(c => {
-                txt += `CODE: ${c.code} | Giảm: ${c.percent}% | Trạng thái: ${c.expired ? 'Hết hạn' : 'Dùng được'}\n`;
+            files.forEach(file => {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    appData.uploadedImages.push(event.target.result);
+                    const img = document.createElement('img');
+                    img.src = event.target.result;
+                    img.className = 'w-12 h-12 object-cover border border-slate-700';
+                    preview.appendChild(img);
+                };
+                reader.readAsDataURL(file);
             });
-            const blob = new Blob([txt], { type: 'text/plain;charset=utf-8' });
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = `Coupons_${Date.now()}.txt`;
-            a.click();
         }
 
-        // Lightbox Image
-        function openLightbox(imgUrl) {
-            document.getElementById('lightbox-img').src = imgUrl;
+        // LIGHTBOX SẢN PHẨM
+        function openLightbox(src) {
+            document.getElementById('lightbox-img').src = src;
             document.getElementById('lightbox-modal').classList.remove('hidden');
         }
 
@@ -3032,35 +2627,104 @@
             document.getElementById('lightbox-modal').classList.add('hidden');
         }
 
-        // Modal VietQR Quick Config
-        function openVietQRConfigModal() {
-            const bankSel = document.getElementById('custom-bank-id');
-            bankSel.innerHTML = VIETNAM_BANKS.map(b => `<option value="${b.id}" ${b.id === state.config.bankId ? 'selected' : ''}>${b.name}</option>`).join('');
-            document.getElementById('custom-acc-no').value = state.config.accNo;
-            document.getElementById('custom-acc-name').value = state.config.accName;
+        // EXPORT BÁO CÁO ADMIN
+        function exportReportTxt() {
+            let txt = "PVH STORE - BÁO CÁO THỐNG KÊ DOANH NGHIỆP\n";
+            txt += `Thời gian xuất: ${new Date().toLocaleString('vi-VN')}\n`;
+            txt += `Tổng doanh thu: ${formatVND(appData.purchases.reduce((s, p) => s + p.price, 0))}\n`;
+            txt += `Tổng số người dùng: ${appData.users.length}\n`;
+            txt += `Kho tài khoản còn lại: ${appData.accounts.filter(a => a.status === 'available').length}\n`;
 
-            document.getElementById('vietqr-config-modal').classList.remove('hidden');
+            const blob = new Blob([txt], { type: 'text/plain;charset=utf-8' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `BaoCao_PVHStore_${Date.now()}.txt`;
+            a.click();
         }
 
-        function closeVietQRConfigModal() {
-            document.getElementById('vietqr-config-modal').classList.add('hidden');
+        function exportToExcel() {
+            const data = appData.purchases.map(p => ({
+                "Mã Đơn": p.id,
+                "Khách Hàng": p.username,
+                "Tên Acc": p.title,
+                "Giá Tiền": p.price,
+                "Thời Gian": p.date
+            }));
+
+            const worksheet = XLSX.utils.json_to_sheet(data);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "LichSuGiaoDich");
+            XLSX.writeFile(workbook, `PVHStore_Report_${Date.now()}.xlsx`);
         }
 
-        function saveCustomVietQR() {
-            state.config.bankId = document.getElementById('custom-bank-id').value;
-            state.config.accNo = document.getElementById('custom-acc-no').value.trim();
-            state.config.accName = document.getElementById('custom-acc-name').value.trim();
-            saveState();
-            closeVietQRConfigModal();
-            showToast('Đã lưu cấu hình QR thanh toán!', 'success');
+        function exportReportPdf() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            doc.text("PVH STORE - HE THONG BAO CAO DOANH NGHIEP", 10, 10);
+            doc.text(`Tong doanh thu: ${appData.purchases.reduce((s, p) => s + p.price, 0)} VND`, 10, 20);
+            doc.text(`Nguoi dung: ${appData.users.length}`, 10, 30);
+            doc.save(`BaoCao_PVH_${Date.now()}.pdf`);
         }
 
-        // Khởi chạy hệ thống
-        window.onload = function() {
-            saveState();
-            updateNavHeader();
-            renderAccountsGrid();
-        };
+        function resetFullSystemData() {
+            if (confirm('CẢNH BÁO NGUY HIỂM: Thao tác này sẽ xóa sạch dữ liệu hệ thống về mặc định ban đầu! Khôi phục sẽ không thể xảy ra.')) {
+                localStorage.clear();
+                location.reload();
+            }
+        }
+
+        // CẤU HÌNH KHÁC
+        function saveAdminWithdrawFeeConfig() {
+            appData.config.withdrawFeeType = document.getElementById('admin-withdraw-fee-type').value;
+            appData.config.withdrawFeeVal = parseInt(document.getElementById('admin-withdraw-fee-val').value) || 0;
+            saveData();
+            showToast('Lưu phí rút tiền thành công!', 'success');
+        }
+
+        function saveAdminQrTimerConfig() {
+            appData.config.qrMinutes = parseInt(document.getElementById('admin-qr-minutes').value) || 15;
+            appData.config.qrSeconds = parseInt(document.getElementById('admin-qr-seconds').value) || 59;
+            saveData();
+            showToast('Lưu thời gian mã QR thành công!', 'success');
+        }
+
+        function saveAdminBonusPercent() {
+            appData.config.depositBonusPercent = parseInt(document.getElementById('admin-bonus-percent').value) || 0;
+            saveData();
+            showToast('Lưu tỷ lệ % thưởng nạp tiền thành công!', 'success');
+        }
+
+        function saveAdminCCCD() {
+            appData.config.adminCccd = document.getElementById('admin-cccd-setting').value.trim();
+            saveData();
+            showToast('Lưu số CCCD Admin thành công!', 'success');
+        }
+
+        function limitCCCDLength(el, len) {
+            el.value = el.value.replace(/\D/g, '').slice(0, len);
+        }
+
+        function limitPhoneLength(el, len) {
+            el.value = el.value.replace(/\D/g, '').slice(0, len);
+        }
+
+        function toggleServerStatus() {
+            appData.config.serverOnline = !appData.config.serverOnline;
+            const badge = document.getElementById('server-status-badge');
+            const btn = document.getElementById('btn-toggle-server');
+
+            if (appData.config.serverOnline) {
+                badge.className = 'px-3 py-1 text-xs font-extrabold bg-emerald-500/10 border border-emerald-500/30 text-emerald-400';
+                badge.textContent = 'Online 24/7';
+                btn.textContent = 'Tắt Server Bảo Trì';
+            } else {
+                badge.className = 'px-3 py-1 text-xs font-extrabold bg-red-500/10 border border-red-500/30 text-red-400';
+                badge.textContent = 'Đang Bảo Trì';
+                btn.textContent = 'Mở Lại Server';
+            }
+            saveData();
+            showToast('Đã thay đổi trạng thái máy chủ!', 'info');
+        }
     </script>
 </body>
 </html>
